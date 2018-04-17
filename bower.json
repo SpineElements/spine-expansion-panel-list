@@ -1,0 +1,25 @@
+{
+  "name": "spine-floating-expansion-list",
+  "description": "An element that displays an associated array of items as a list of cards and allows displaying an expanded item view that stands out in a 'floating' card",
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "main": [
+    "spine-floating-expansion-list.html"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0",
+    "iron-list": "PolymerElements/iron-list#^2.0.14",
+    "paper-styles": "PolymerElements/paper-styles#^2.1.0"
+  },
+  "devDependencies": {
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.5.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0"
+  }
+}

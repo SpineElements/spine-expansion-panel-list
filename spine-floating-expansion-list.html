@@ -1,0 +1,269 @@
+<!--
+  ~ Copyright (c) 2000-2018 TeamDev Ltd. All rights reserved.
+  ~ TeamDev PROPRIETARY and CONFIDENTIAL.
+  ~ Use is subject to license terms.
+  -->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-styles/shadow.html">
+<link rel="import" href="../iron-list/iron-list.html">
+
+<link rel="import" href="spine-template-stamper.html">
+
+<dom-module id="spine-floating-expansion-list">
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        ---shadow-and-separators-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
+      }
+
+      :host ::slotted(.-spine-floating-expansion-list-item) {
+        margin: 0 var(--spine-floating-expansion-list-expansion-size, 20px);
+        @apply --shadow-elevation-2dp;
+        background: var(--primary-background-color, #ffffff);
+        color: var(--primary-text-color, #000000);
+        padding: 8px 16px;
+        cursor: pointer;
+
+        @apply --spine-floating-expansion-list-item;
+        overflow: hidden;
+      }
+
+      :host ::slotted(.-spine-floating-expansion-list-item) {
+        transition: all 0.2s;
+      }
+
+      :host ::slotted(.-spine-floating-expansion-list-item:not([expanded]):not([ends-collapsed-range])) {
+        border-bottom: 1px solid var(---shadow-and-separators-color);
+      }
+
+      :host ::slotted(.-spine-floating-expansion-list-item[expanded]) {
+        margin: 16px 0;
+        @apply --shadow-elevation-8dp;
+
+        cursor: default;
+
+        @apply --spine-floating-expansion-list-expanded-item;
+      }
+
+    </style>
+
+    <div>
+      <slot></slot>
+    </div>
+  </template>
+
+  <template id="light-dom-template">
+    <dom-repeat items="[[items]]">
+      <template>
+        <div class="-spine-floating-expansion-list-item"
+             expanded$="[[_isItemExpanded(item, _expandedItem)]]"
+             ends-collapsed-range$="[[_getItemEndsCollapsedRange(item, _expandedItem)]]"
+             on-click="_handleItemClick">
+          <div class="-spine-floating-expansion-list-item-content">
+            <dom-if if="[[!_useItemExpandedTemplate(item, _expandedItem)]]">
+              <template>
+                <!--
+                  The "overflow: hidden" style is added below to prevent collapsing the stamper
+                  children's margins, e.g. if <h2> is placed as the first template's tag,
+                  see this approach here: https://stackoverflow.com/a/19719427
+                  This is needed for a proper "height: auto" animation in
+                  `_handleExpandedItemChange` method.
+
+                  Inplace style is used instead of a dedicated CSS rule since the ::slotted
+                  pseudo-element can target only top-level slot nodes, as noted here:
+                  https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
+                -->
+                <spine-template-stamper custom-template="[[__collapsedTemplate]]"
+                                        props="[[_getStamperProperties(item)]]"
+                                        style="overflow: hidden">
+                </spine-template-stamper>
+              </template>
+            </dom-if>
+            <dom-if if="[[_useItemExpandedTemplate(item, _expandedItem)]]">
+              <template>
+                <spine-template-stamper custom-template="[[__expandedTemplate]]"
+                                        props="[[_getStamperProperties(item)]]"
+                                        style="overflow: hidden">
+                </spine-template-stamper>
+              </template>
+            </dom-if>
+          </div>
+        </div>
+      </template>
+    </dom-repeat>
+  </template>
+
+  <script>
+    class SpineFloatingExpansionList extends Polymer.Element {
+      static get is() { return 'spine-floating-expansion-list'; }
+
+      static get properties() {
+        return {
+          items: {
+            type: Array
+          },
+          expandedItem: {
+            type: Object,
+            notify: true,
+            observer: '_handleExpandedItemChange'
+          },
+          /**
+           * This property is an internal mirror of the `expandedItems` property, and it is needed
+           * instead of just using the `expandedItem` property in order to be able to measure and
+           * update item heights before the `_expandedItem` that is bound to the elements is
+           * changed, which is needed for proper item height animation (see the
+           * `_handleExpandedItemChange` method).
+           */
+          _expandedItem: {
+            type: Object
+          }
+        }
+      }
+
+      constructor() {
+        super();
+        this._documentClickListener = (event) => {
+          this._handleDocumentClick(event)
+        }
+      }
+
+      static get _lightDomTemplate() {
+        if (!this.__lightDomTemplate) {
+          this.__lightDomTemplate =
+              Polymer.DomModule.import(SpineFloatingExpansionList.is, "#light-dom-template");
+        }
+        return this.__lightDomTemplate;
+      }
+
+      ready() {
+        this.__collapsedTemplate = this.querySelector('template:not(.expanded)');
+        this.__expandedTemplate = this.querySelector('template.expanded');
+
+        super.ready();
+
+        const stampedTemplate = this._stampTemplate(this.constructor._lightDomTemplate);
+        // the item elements need to be placed in light DOM so that their style could be customized
+        // with CSS declarations in the context where the `spine-floating-expansion-list` element
+        // is used and where the appropriate item templates are provided
+        this.appendChild(stampedTemplate);
+      }
+
+      _getStamperProperties(item) {
+        return {item};
+      }
+
+      _isItemExpanded(item, expandedItem) {
+        return item === expandedItem;
+      }
+
+      _getItemEndsCollapsedRange(item, expandedItem) {
+        const itemIndex = this.items.indexOf(item);
+        if (itemIndex === -1) {
+          return false;
+        }
+
+        if (itemIndex === this.items.length - 1) {
+          return true;
+        }
+
+        const expandedItemIndex = this.items.indexOf(expandedItem);
+        if (expandedItemIndex === -1) {
+          return false;
+        }
+        return itemIndex === expandedItemIndex - 1;
+      }
+
+      _useItemExpandedTemplate(item, expandedItem) {
+        return this._isItemExpanded(item, expandedItem) && this.__expandedTemplate != null;
+      }
+
+      _handleItemClick(event) {
+        this.expandedItem = event.model.item;
+      }
+
+      _getItemElements() {
+        return this.querySelectorAll('.-spine-floating-expansion-list-item');
+      }
+
+      _getItemContentElement(itemElement) {
+        return itemElement.querySelector('.-spine-floating-expansion-list-item-content');
+      }
+
+      static __getTransitionDuration(element) {
+        if (!element) {
+          return 0;
+        }
+        const transitionDuration = getComputedStyle(element)['transition-duration'];
+        if (transitionDuration.endsWith('ms')) {
+          return parseInt(transitionDuration);
+        } else if (transitionDuration.endsWith('s')) {
+          return parseFloat(transitionDuration) * 1000;
+        } else {
+          throw new Error(`Couldn't parse transition-duration value: ${transitionDuration}`);
+        }
+      }
+
+      _handleExpandedItemChange() {
+        const itemElements = this._getItemElements();
+        const elementForItem = (item, indexCorrection = 0) =>
+            itemElements[this.items.indexOf(item) + indexCorrection];
+        const prevExpandedElement = elementForItem(this._expandedItem);
+        const newExpandedElement = elementForItem(this.expandedItem);
+
+        const itemHeightsToAnimate = [prevExpandedElement, newExpandedElement].filter(el => el);
+
+        const setItemHeightByContent = element => {
+          const itemContentElement = this._getItemContentElement(element);
+          element.style.height = `${itemContentElement.offsetHeight}px`;
+        };
+        const setItemHeightAuto = element => {
+          element.style.height = 'auto';
+        };
+
+        // we need to set the fixed initial item heights instead of 'auto' values in order for
+        // the height transition animation to work (which doesn't work with 'auto' values)
+        itemHeightsToAnimate.forEach(setItemHeightByContent);
+        this.set('_expandedItem', this.expandedItem);
+        Polymer.Async.microTask.run(() => {
+          // start the height transition animation by setting height to match the updated content;
+          // this should be done after an async delay to let the `dom-if` elements to restamp the
+          // contents of expanded/collapsed items before we measure their new heights
+          itemHeightsToAnimate.forEach(setItemHeightByContent);
+          const transitionDuration =
+              this.constructor.__getTransitionDuration(prevExpandedElement || newExpandedElement);
+          setTimeout(() => {
+            // remove fixed item heights and set them back to 'auto' for any subsequent height
+            // changes that might occur dynamically (e.g. due to content changes) are not ignored
+            itemHeightsToAnimate.forEach(setItemHeightAuto);
+          }, transitionDuration);
+        });
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        document.addEventListener('click', this._documentClickListener);
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        document.removeEventListener('click', this._documentClickListener);
+      }
+
+      _handleDocumentClick(event) {
+        if (event.composedPath().some(el =>
+            el !== this && el instanceof Node && this.contains(el)
+        )) {
+          // one of the items was clicked, no auto collapsing is required
+          return;
+        }
+        this.expandedItem = null;
+      }
+    }
+
+    window.customElements.define(SpineFloatingExpansionList.is, SpineFloatingExpansionList);
+  </script>
+</dom-module>
