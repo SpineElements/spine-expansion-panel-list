@@ -48,7 +48,6 @@
 
         @apply --spine-floating-expansion-list-expanded-item;
       }
-
     </style>
 
     <div>
@@ -140,8 +139,8 @@
       }
 
       ready() {
-        this.__collapsedTemplate = this.querySelector('template:not(.expanded)');
-        this.__expandedTemplate = this.querySelector('template.expanded');
+        this.__collapsedTemplate = this.querySelector('template:not([expanded])');
+        this.__expandedTemplate = this.querySelector('template[expanded]');
 
         super.ready();
 
