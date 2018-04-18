@@ -20,7 +20,7 @@
         ---shadow-and-separators-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
       }
 
-      :host ::slotted(.-spine-floating-expansion-list-item) {
+      #container ::slotted(.-spine-floating-expansion-list-item) {
         margin: 0 var(--spine-floating-expansion-list-expansion-size, 20px);
         @apply --shadow-elevation-2dp;
         background: var(--primary-background-color, #ffffff);
@@ -32,15 +32,15 @@
         overflow: hidden;
       }
 
-      :host ::slotted(.-spine-floating-expansion-list-item) {
+      #container ::slotted(.-spine-floating-expansion-list-item) {
         transition: all 0.2s;
       }
 
-      :host ::slotted(.-spine-floating-expansion-list-item:not([expanded]):not([ends-collapsed-range])) {
+      #container ::slotted(.-spine-floating-expansion-list-item:not([expanded]):not([ends-collapsed-range])) {
         border-bottom: 1px solid var(---shadow-and-separators-color);
       }
 
-      :host ::slotted(.-spine-floating-expansion-list-item[expanded]) {
+      #container ::slotted(.-spine-floating-expansion-list-item[expanded]) {
         margin: 16px 0;
         @apply --shadow-elevation-8dp;
 
@@ -50,7 +50,7 @@
       }
     </style>
 
-    <div>
+    <div id="container">
       <slot></slot>
     </div>
   </template>
