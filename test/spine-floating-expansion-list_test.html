@@ -85,7 +85,7 @@
       list = testContainer.shadowRoot.querySelector('#test-list');
     });
 
-    test('number of rendered items is correct', () => {
+    test('number of rendered items is correct (all items collapsed)', () => {
       const collapsedItems = list.querySelectorAll('.collapsed-test-item');
       const expandedItems = list.querySelectorAll('.expanded-test-item');
       assert.equal(collapsedItems.length, testItems.length, 'Checking the number of collapsed items');
