@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (c) 2000-2018 TeamDev Ltd. All rights reserved.
+  ~ TeamDev PROPRIETARY and CONFIDENTIAL.
+  ~ Use is subject to license terms.
+  -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>spine-floating-expansion-list test</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../spine-floating-expansion-list.html">
+
+</head>
+<body>
+<script>
+  const testItems = [
+    {name: 'spine-floating-expansion-list', url: 'https://github.com/SpineElements/spine-floating-expansion-list'},
+    {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
+    {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
+    {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
+    {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
+    {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
+    {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
+    {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
+    {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
+    {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
+    {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
+    {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
+    {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
+    {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
+  ];
+</script>
+
+<dom-module id="test-element-container">
+  <template>
+    <style>
+    </style>
+    <spine-floating-expansion-list id="test-list" items="[[items]]">
+      <template>
+        <div class="collapsed-test-item">
+          <div>[[item.name]]</div>
+          <a href="[[item.url]]">GitHub page</a>
+        </div>
+      </template>
+      <template expanded>
+        <div class="expanded-test-item">
+          <h2>[[item.name]]</h2>
+          <a href="[[item.url]]">GitHub page</a>
+        </div>
+      </template>
+    </spine-floating-expansion-list>
+  </template>
+
+  <script>
+    HTMLImports.whenReady(function () {
+      class TestElementContainer extends Polymer.Element {
+        static get is() { return 'test-element-container'; }
+
+        constructor() {
+          super();
+          this.items = testItems;
+        }
+      }
+      window.customElements.define(TestElementContainer.is, TestElementContainer);
+    });
+  </script>
+</dom-module>
+
+<test-fixture id="basic-setup">
+  <template>
+    <test-element-container></test-element-container>
+  </template>
+</test-fixture>
+
+<script>
+  suite('<spine-floating-expansion-list>', function() {
+    let list;
+    setup(() => {
+      const testContainer = fixture('basic-setup');
+      Polymer.flush();
+      list = testContainer.shadowRoot.querySelector('#test-list');
+    });
+
+    test('number of rendered items is correct', () => {
+      const collapsedItems = list.querySelectorAll('.collapsed-test-item');
+      const expandedItems = list.querySelectorAll('.expanded-test-item');
+      assert.equal(collapsedItems.length, testItems.length, 'Checking the number of collapsed items');
+      assert.equal(expandedItems.length, 0, 'Checking the number of expanded items');
+    });
+  });
+</script>
+</body>
+</html>

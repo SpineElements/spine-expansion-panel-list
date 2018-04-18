@@ -14,28 +14,28 @@
 <dom-module id="demo-element">
   <template>
     <style>
-      .collapsedItem {
+      .collapsed-item {
         display: flex;
       }
-      .collapsedItem div {
+      .collapsed-item div {
         flex: 1 1 auto;
       }
-      .expandedItem {
+      .expanded-item {
         padding: 8px;
       }
-      .expandedItem a {
+      .expanded-item a {
         font-size: 15px;
       }
     </style>
     <spine-floating-expansion-list items="[[items]]">
       <template>
-        <div class="collapsedItem">
+        <div class="collapsed-item">
           <div>[[item.name]]</div>
           <a href="[[item.url]]">GitHub page</a>
         </div>
       </template>
       <template expanded>
-        <div class="expandedItem">
+        <div class="expanded-item">
           <h2>[[item.name]]</h2>
           <a href="[[item.url]]">GitHub page</a>
         </div>
@@ -45,9 +45,8 @@
 
   <script>
     HTMLImports.whenReady(function () {
-
       class DemoElement extends Polymer.Element {
-      static get is() { return 'demo-element'; }
+        static get is() { return 'demo-element'; }
 
         constructor() {
           super();
