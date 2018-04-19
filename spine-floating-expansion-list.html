@@ -11,6 +11,10 @@
 
 <link rel="import" href="spine-template-stamper.html">
 
+<!--
+An element that displays an associated array of items as a list of cards and allows displaying
+an expanded item view that stands out in a "floating" card.
+-->
 <dom-module id="spine-floating-expansion-list">
   <template>
     <style>
@@ -63,7 +67,7 @@
              ends-collapsed-range$="[[_getItemEndsCollapsedRange(item, _expandedItem)]]"
              on-click="_handleItemClick">
           <div class="-spine-floating-expansion-list-item-content">
-            <dom-if if="[[!_useItemExpandedTemplate(item, _expandedItem)]]">
+            <dom-if if="[[!_useItemExpandedTemplate(item, _expandedItem)]]" restamp>
               <template>
                 <!--
                   The "overflow: hidden" style is added below to prevent collapsing the stamper
@@ -72,8 +76,9 @@
                   This is needed for a proper "height: auto" animation in
                   `_handleExpandedItemChange` method.
 
-                  Inplace style is used instead of a dedicated CSS rule since the ::slotted
-                  pseudo-element can target only top-level slot nodes, as noted here:
+                  Inplace style is used instead of a dedicated CSS rule since this template is
+                  rendered in the element's light DOM (not shadow DOM), and the ::slotted CSS
+                  selector can target only top-level slot nodes, as noted here:
                   https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
                 -->
                 <spine-template-stamper custom-template="[[__collapsedTemplate]]"
@@ -82,7 +87,7 @@
                 </spine-template-stamper>
               </template>
             </dom-if>
-            <dom-if if="[[_useItemExpandedTemplate(item, _expandedItem)]]">
+            <dom-if if="[[_useItemExpandedTemplate(item, _expandedItem)]]" restamp>
               <template>
                 <spine-template-stamper custom-template="[[__expandedTemplate]]"
                                         props="[[_getStamperProperties(item)]]"
