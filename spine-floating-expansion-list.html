@@ -202,6 +202,9 @@ an expanded item view that stands out in a "floating" card.
           return 0;
         }
         const transitionDuration = getComputedStyle(element)['transition-duration'];
+        if (!transitionDuration) {
+          return 0;
+        }
         if (transitionDuration.endsWith('ms')) {
           return parseInt(transitionDuration);
         } else if (transitionDuration.endsWith('s')) {
@@ -233,12 +236,16 @@ an expanded item view that stands out in a "floating" card.
         itemHeightsToAnimate.forEach(setItemHeightByContent);
         this.set('_expandedItem', this.expandedItem);
         Polymer.Async.microTask.run(() => {
+          if (!this.ownerDocument) {
+            // skip further animation if the element was removed from the document already
+            return;
+          }
           // start the height transition animation by setting height to match the updated content;
           // this should be done after an async delay to let the `dom-if` elements to restamp the
           // contents of expanded/collapsed items before we measure their new heights
           itemHeightsToAnimate.forEach(setItemHeightByContent);
           const transitionDuration =
-              this.constructor.__getTransitionDuration(prevExpandedElement || newExpandedElement);
+              this.constructor.__getTransitionDuration(itemHeightsToAnimate[0]);
           setTimeout(() => {
             // remove fixed item heights and set them back to 'auto' for any subsequent height
             // changes that might occur dynamically (e.g. due to content changes) are not ignored

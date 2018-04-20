@@ -79,23 +79,23 @@
 
 <script>
   suite('<spine-floating-expansion-list>', function() {
+    let listContainer;
+    let list;
+
     const classNames = {
       item: '-spine-floating-expansion-list-item',
       collapsedItemContent: 'collapsed-test-item',
       expandedItemContent: 'expanded-test-item',
     };
 
-    /**
-     * Size in pixels by which an expanded item's left/right edges stand out relative to the side
-     * edges of collapsed items.
-     */
+    // size in pixels by which an expanded item's left/right edges stand out relative to the side
+    // edges of collapsed items.
     const defaultItemExpansionSize = 20;
+    // vertical distance in pixels between an expanded item and adjacent collapsed ones
+    const defaultExpandedItemVertMargin = 16;
 
     window.Checkers = Object.assign(window.Checkers || {}, {
-      /**
-       * @returns {function(node: Node, message: string)}
-       */
-      collapsedItemContents: (itemModel) => Checkers.element({
+      collapsedItemContents: itemModel => Checkers.element({
         name: 'div',
         className: classNames.collapsedItemContent,
         childNodeCheckers: [
@@ -111,10 +111,7 @@
         ]
       }),
 
-      /**
-       * @returns {function(node: Node, message: string)}
-       */
-      expandedItemContents: (itemModel) => Checkers.element({
+      expandedItemContents: itemModel => Checkers.element({
         name: 'div',
         className: classNames.expandedItemContent,
         childNodeCheckers: [
@@ -128,11 +125,37 @@
             innerHTML: 'GitHub page'
           })
         ]
-      })
+      }),
+
+      itemLayout: (expanded, prevItemBottomEdge, firstItem) => (itemElement, message) => {
+        const containerRect = listContainer.getBoundingClientRect();
+        const expansionHorizOffset = expanded ? 0 : defaultItemExpansionSize;
+        const expansionVertOffset = firstItem
+            ? 0 /* expanded item's top margin collapses for the first item */
+            : expanded ? defaultExpandedItemVertMargin : 0;
+        Checkers.element({
+          borderBox: {
+            top: prevItemBottomEdge + expansionVertOffset,
+            left: containerRect.left + expansionHorizOffset,
+            right: containerRect.right - expansionHorizOffset,
+          }
+        })(itemElement, message);
+      }
     });
 
-    let listContainer;
-    let list;
+    function checkListItemsLayout(expandedItemIndex) {
+      let prevSiblingBottomEdge = listContainer.getBoundingClientRect().top;
+      const itemElements = list.querySelectorAll(`.${classNames.item}`);
+      itemElements.forEach((itemElement, itemIndex) => {
+        const expanded = itemIndex === expandedItemIndex;
+        Checkers.itemLayout(expanded, prevSiblingBottomEdge, itemIndex === 0)
+          (itemElement, `Checking alignment of item at index ${itemIndex}`);
+        prevSiblingBottomEdge =
+            itemElement.getBoundingClientRect().bottom +
+            (expanded ? defaultExpandedItemVertMargin : 0);
+      });
+    }
+
     setup(() => {
       const testContainer = fixture('test-setup');
       Polymer.flush();
@@ -200,24 +223,25 @@
           'Checking rendered item contents when an "extraneous" item is requested to be expanded');
     });
 
-    test('items layout is correct', () => {
+    test('collapsed items layout is correct', () => {
       assert.isTrue(listContainer.offsetWidth > 100,
           'Ensure that testing conditions are fine (we have enough width for displaying items)');
+      checkListItemsLayout(-1);
+    });
 
-      let containerRect = listContainer.getBoundingClientRect();
-      let prevSiblingBottomEdge = containerRect.top;
-      const itemElements = list.querySelectorAll(`.${classNames.item}`);
-      itemElements.forEach((itemElement, itemIndex) => {
-        let itemRect = itemElement.getBoundingClientRect();
-        Checkers.element({
-          borderBox: {
-            top: prevSiblingBottomEdge,
-            left: containerRect.left + defaultItemExpansionSize,
-            right: containerRect.right - defaultItemExpansionSize,
-          }
-        })(itemElement, `Checking alignment of item at index ${itemIndex}`);
-        prevSiblingBottomEdge += itemRect.height;
+    test('expanded item layout is correct', done => {
+      const asyncCalls = [];
+      testItems.forEach((item, itemIndex) => {
+        asyncCalls.push(() => {
+          list.expandedItem = item;
+          Polymer.flush();
+        });
+        asyncCalls.push(() => {
+          checkListItemsLayout(itemIndex);
+        })
       });
+      asyncCalls.push(() => done());
+      runAsyncChain({retryTimeout: 2000}, ...asyncCalls);
     });
 
   });
