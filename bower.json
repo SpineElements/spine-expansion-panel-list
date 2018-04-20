@@ -13,7 +13,7 @@
     "polymer": "Polymer/polymer#^2.0.0",
     "iron-list": "PolymerElements/iron-list#^2.0.14",
     "paper-styles": "PolymerElements/paper-styles#^2.1.0",
-    "spine-test-helpers": "SpineElements/spine-test-helpers#add-some-methods"
+    "spine-test-helpers": "SpineElements/spine-test-helpers#^0.2.0"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
