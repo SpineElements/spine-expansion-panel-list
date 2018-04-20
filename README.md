@@ -8,7 +8,7 @@ value of the `item` variable, which can be used inside the template's elements t
 respective item object.
 
 A template for an expanded item can be specified using an additional nested `template` element with
-a no-value `expanded` attribute.
+`class="expanded"` attribute.
 
 Example:
 ```
@@ -17,7 +17,7 @@ Example:
     <div>Name: [[item.name]]</div>
     <div>Size: [[item.size]]</div>
   </template>
-  <template expanded>
+  <template class="expanded">
     <div>Name: [[item.name]]</div>
     <img src="[[item.imageUrl]]>
   </template>
