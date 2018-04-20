@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>spine-floating-expansion-list demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../spine-floating-expansion-list.html">
+</head>
+<body>
+
+<dom-module id="demo-element">
+  <template>
+    <style>
+      .collapsed-item {
+        display: flex;
+      }
+      .collapsed-item div {
+        flex: 1 1 auto;
+      }
+      .expanded-item {
+        padding: 0 0 16px;
+      }
+      .expanded-item a {
+        font-size: 15px;
+      }
+    </style>
+    <spine-floating-expansion-list items="[[items]]">
+      <template>
+        <div class="collapsed-item">
+          <div>[[item.name]]</div>
+          <a href="[[item.url]]">GitHub page</a>
+        </div>
+      </template>
+      <template class="expanded">
+        <div class="expanded-item">
+          <h2>[[item.name]]</h2>
+          <a href="[[item.url]]">GitHub page</a>
+        </div>
+      </template>
+    </spine-floating-expansion-list>
+  </template>
+
+  <script>
+    HTMLImports.whenReady(function () {
+      class DemoElement extends Polymer.Element {
+        static get is() { return 'demo-element'; }
+
+        constructor() {
+          super();
+
+          this.items = [
+            {name: 'spine-floating-expansion-list', url: 'https://github.com/SpineElements/spine-floating-expansion-list'},
+            {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
+            {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
+            {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
+            {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
+            {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
+            {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
+            {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
+            {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
+            {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
+            {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
+            {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
+            {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
+            {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
+          ];
+        }
+      }
+
+      window.customElements.define(DemoElement.is, DemoElement);
+    });
+  </script>
+</dom-module>
+
+<demo-element></demo-element>
+
+</body>
+</html>

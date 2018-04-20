@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (c) 2000-2018 TeamDev. All rights reserved.
+  ~ TeamDev PROPRIETARY and CONFIDENTIAL.
+  ~ Use is subject to license terms.
+  -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>spine-floating-expansion-list test</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../../spine-test-helpers/spine-test-helpers.html">
+  <link rel="import" href="../spine-floating-expansion-list.html">
+</head>
+<body>
+<script>
+  const testItems = [
+    {name: 'spine-floating-expansion-list', url: 'https://github.com/SpineElements/spine-floating-expansion-list'},
+    {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
+    {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
+    {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
+    {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
+    {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
+    {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
+    {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
+    {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
+    {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
+    {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
+    {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
+    {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
+    {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
+  ];
+</script>
+
+<dom-module id="test-element-container">
+  <template>
+    <div id="list-container">
+      <spine-floating-expansion-list id="list" items="[[items]]">
+        <template>
+          <div class="collapsed-test-item">
+            <div>[[item.name]]</div>
+            <a href="[[item.url]]">GitHub page</a>
+          </div>
+        </template>
+        <template class="expanded">
+          <div class="expanded-test-item">
+            <h2>[[item.name]]</h2>
+            <a href="[[item.url]]">GitHub page</a>
+          </div>
+        </template>
+      </spine-floating-expansion-list>
+    </div>
+  </template>
+
+  <script>
+    HTMLImports.whenReady(function () {
+      class TestElementContainer extends Polymer.Element {
+        static get is() { return 'test-element-container'; }
+
+        constructor() {
+          super();
+          this.items = testItems;
+        }
+      }
+      window.customElements.define(TestElementContainer.is, TestElementContainer);
+    });
+  </script>
+</dom-module>
+
+<test-fixture id="test-setup">
+  <template>
+    <test-element-container></test-element-container>
+  </template>
+</test-fixture>
+
+<script>
+  suite('<spine-floating-expansion-list>', function() {
+    let listContainer;
+    let list;
+
+    const classNames = {
+      item: '-spine-floating-expansion-list-item',
+      collapsedItemContent: 'collapsed-test-item',
+      expandedItemContent: 'expanded-test-item',
+    };
+
+    // size in pixels by which an expanded item's left/right edges stand out relative to the side
+    // edges of collapsed items.
+    const defaultItemExpansionSize = 20;
+    // vertical distance in pixels between an expanded item and adjacent collapsed ones
+    const defaultExpandedItemVertMargin = 16;
+
+    window.Checkers = Object.assign(window.Checkers || {}, {
+      collapsedItemContents: itemModel => Checkers.element({
+        name: 'div',
+        hasClassNames: [classNames.collapsedItemContent],
+        childNodeCheckers: [
+          Checkers.element({
+            name: 'div',
+            innerHTML: itemModel.name
+          }),
+          Checkers.element({
+            name: 'a',
+            properties: {href: itemModel.url},
+            innerHTML: 'GitHub page'
+          })
+        ]
+      }),
+
+      expandedItemContents: itemModel => Checkers.element({
+        name: 'div',
+        hasClassNames: [classNames.expandedItemContent],
+        childNodeCheckers: [
+          Checkers.element({
+            name: 'h2',
+            innerHTML: itemModel.name
+          }),
+          Checkers.element({
+            name: 'a',
+            properties: {href: itemModel.url},
+            innerHTML: 'GitHub page'
+          })
+        ]
+      }),
+
+      itemLayout: (expanded, prevItemBottomEdge, firstItem) => (itemElement, message) => {
+        const containerRect = listContainer.getBoundingClientRect();
+        const expansionHorizOffset = expanded ? 0 : defaultItemExpansionSize;
+        const expansionVertOffset = firstItem
+            ? 0 /* expanded item's top margin collapses for the first item */
+            : expanded ? defaultExpandedItemVertMargin : 0;
+        Checkers.element({
+          borderBox: {
+            top: prevItemBottomEdge + expansionVertOffset,
+            left: containerRect.left + expansionHorizOffset,
+            right: containerRect.right - expansionHorizOffset,
+          }
+        })(itemElement, message);
+      }
+    });
+
+    function checkListItemsLayout(expandedItemIndex) {
+      let prevSiblingBottomEdge = listContainer.getBoundingClientRect().top;
+      const itemElements = list.querySelectorAll(`.${classNames.item}`);
+      itemElements.forEach((itemElement, itemIndex) => {
+        const expanded = itemIndex === expandedItemIndex;
+        Checkers.itemLayout(expanded, prevSiblingBottomEdge, itemIndex === 0)
+          (itemElement, `Checking alignment of item at index ${itemIndex}`);
+        prevSiblingBottomEdge =
+            itemElement.getBoundingClientRect().bottom +
+            (expanded ? defaultExpandedItemVertMargin : 0);
+      });
+    }
+
+    setup(() => {
+      const testContainer = fixture('test-setup');
+      Polymer.flush();
+
+      listContainer = testContainer.shadowRoot.querySelector('#list-container');
+      list = listContainer.querySelector('#list');
+    });
+
+    test('defaults are correct', () => {
+      let expandedItem = list.expandedItem;
+      assert.isTrue(expandedItem === null || expandedItem === undefined,
+          `expecting expandedItem to be null or undefined by default: ${expandedItem}`);
+      assert.equal(list.items, testItems, 'Item assigned are preserved');
+    });
+
+    test('number of rendered items is correct (all items collapsed)', () => {
+      const collapsedItems = list.querySelectorAll(`.${classNames.collapsedItemContent}`);
+      const expandedItems = list.querySelectorAll(`.${classNames.expandedItemContent}`);
+      assert.equal(collapsedItems.length, testItems.length, 'Checking the number of collapsed items');
+      assert.equal(expandedItems.length, 0, 'Checking the number of expanded items');
+    });
+
+    test('number of rendered items is correct (contains an expanded item)', () => {
+      list.expandedItem = testItems[1];
+      assert.equal(list.expandedItem, testItems[1],
+          'Checking that `expandedItem` property is set correctly');
+      Polymer.flush();
+      const collapsedItems = list.querySelectorAll(`.${classNames.collapsedItemContent}`);
+      const expandedItems = list.querySelectorAll(`.${classNames.expandedItemContent}`);
+      assert.equal(collapsedItems.length, testItems.length - 1, 'Checking the number of collapsed items');
+      assert.equal(expandedItems.length, 1, 'Checking the number of expanded items');
+    });
+
+    test('rendered item contents are correct', () => {
+      const checkItemContents = (expandedItemIndex, message) => {
+        const itemElements = list.querySelectorAll(
+            `.${classNames.collapsedItemContent}, .${classNames.expandedItemContent}`);
+        checkNodeList(itemElements, null, testItems.map((itemModel, itemIndex) =>
+            itemIndex === expandedItemIndex
+                ? Checkers.expandedItemContents(itemModel)
+                : Checkers.collapsedItemContents(itemModel)
+        ), message);
+      };
+
+      // first, check the default expansion state
+      checkItemContents(-1, 'Checking rendered item contents with all items collapsed');
+
+      // expand items one by one and check the rendered contents on each stage
+      testItems.forEach((item, itemIndex) => {
+        list.expandedItem = testItems[itemIndex];
+        assert.equal(list.expandedItem, testItems[itemIndex],
+            `Checking that expandedItem property is set correctly (itemIndex=${itemIndex})`);
+        Polymer.flush();
+        checkItemContents(itemIndex,
+            `Checking rendered item contents (expanded item index is ${itemIndex})`);
+      });
+
+      // set an item that is not included in the items list and check the rendered contents
+      let itemNotInTheList = {name: 'Item not in the list', url: 'http://localhost:8080'};
+      list.expandedItem = itemNotInTheList;
+      assert.equal(list.expandedItem, itemNotInTheList,
+          'Checking that expanded item is preserved for "extraneous" items');
+      Polymer.flush();
+      checkItemContents(-1,
+          'Checking rendered item contents when an "extraneous" item is requested to be expanded');
+    });
+
+    test('collapsed items layout is correct', () => {
+      assert.isTrue(listContainer.offsetWidth > 100,
+          'Ensure that testing conditions are fine (we have enough width for displaying items)');
+      checkListItemsLayout(-1);
+    });
+
+    test('expanded item layout is correct', done => {
+      const asyncCalls = [];
+      testItems.forEach((item, itemIndex) => {
+        asyncCalls.push(() => {
+          list.expandedItem = item;
+          Polymer.flush();
+        });
+        asyncCalls.push(() => {
+          checkListItemsLayout(itemIndex);
+        })
+      });
+      asyncCalls.push(() => done());
+      runAsyncChain({retryTimeout: 2000}, ...asyncCalls);
+    });
+
+  });
+</script>
+</body>
+</html>
