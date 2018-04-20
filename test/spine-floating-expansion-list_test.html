@@ -97,7 +97,7 @@
     window.Checkers = Object.assign(window.Checkers || {}, {
       collapsedItemContents: itemModel => Checkers.element({
         name: 'div',
-        className: classNames.collapsedItemContent,
+        hasClassNames: [classNames.collapsedItemContent],
         childNodeCheckers: [
           Checkers.element({
             name: 'div',
@@ -113,7 +113,7 @@
 
       expandedItemContents: itemModel => Checkers.element({
         name: 'div',
-        className: classNames.expandedItemContent,
+        hasClassNames: [classNames.expandedItemContent],
         childNodeCheckers: [
           Checkers.element({
             name: 'h2',
