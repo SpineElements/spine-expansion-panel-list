@@ -39,3 +39,9 @@ Custom property                                  | Description                  
 `--spine-floating-expansion-list-item`           | Mixin applied to all list item containers      | `{}`
 `--spine-floating-expansion-list-expanded-item`  | Mixin applied to expanded list item containers | `{}`
 `--spine-floating-expansion-list-expansion-size` | Size by which an expanded item's left/right edges stand out relative to the side edges of collapsed items | `20px`
+
+# License
+
+Apache License
+
+Version 2.0, January 2004
