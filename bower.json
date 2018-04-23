@@ -1,6 +1,6 @@
 {
   "name": "spine-expansion-panel-list",
-  "description": "An element that displays an associated array of items as a list of cards and allows displaying an expanded item view that stands out in a 'floating' card",
+  "description": "An element that displays an associated array of items as a list of panels showing a summary view for each item, and allows expanding any item to display a full item view",
   "keywords": [
     "web-components",
     "web-component",
