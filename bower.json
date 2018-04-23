@@ -1,13 +1,13 @@
 {
-  "name": "spine-floating-expansion-list",
-  "description": "An element that displays an associated array of items as a list of cards and allows displaying an expanded item view that stands out in a 'floating' card",
+  "name": "spine-expansion-panel-list",
+  "description": "A list of panels showing a summary for each item with an ability to expand any item to display a full item view",
   "keywords": [
     "web-components",
     "web-component",
     "polymer"
   ],
   "main": [
-    "spine-floating-expansion-list.html"
+    "spine-expansion-panel-list.html"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",

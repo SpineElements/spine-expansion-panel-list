@@ -7,18 +7,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>spine-floating-expansion-list test</title>
+  <title>spine-expansion-panel-list test</title>
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
 
   <link rel="import" href="../../spine-test-helpers/spine-test-helpers.html">
-  <link rel="import" href="../spine-floating-expansion-list.html">
+  <link rel="import" href="../spine-expansion-panel-list.html">
 </head>
 <body>
 <script>
   const testItems = [
-    {name: 'spine-floating-expansion-list', url: 'https://github.com/SpineElements/spine-floating-expansion-list'},
+    {name: 'spine-expansion-panel-list', url: 'https://github.com/SpineElements/spine-expansion-panel-list'},
     {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
     {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
     {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
@@ -38,7 +38,7 @@
 <dom-module id="test-element-container">
   <template>
     <div id="list-container">
-      <spine-floating-expansion-list id="list" items="[[items]]">
+      <spine-expansion-panel-list id="list" items="[[items]]">
         <template>
           <div class="collapsed-test-item">
             <div>[[item.name]]</div>
@@ -51,7 +51,7 @@
             <a href="[[item.url]]">GitHub page</a>
           </div>
         </template>
-      </spine-floating-expansion-list>
+      </spine-expansion-panel-list>
     </div>
   </template>
 
@@ -77,12 +77,12 @@
 </test-fixture>
 
 <script>
-  suite('<spine-floating-expansion-list>', function() {
+  suite('<spine-expansion-panel-list>', function() {
     let listContainer;
     let list;
 
     const classNames = {
-      item: '-spine-floating-expansion-list-item',
+      item: '-spine-expansion-panel-list-item',
       collapsedItemContent: 'collapsed-test-item',
       expandedItemContent: 'expanded-test-item',
     };

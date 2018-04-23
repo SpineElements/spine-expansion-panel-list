@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
-  <title>spine-floating-expansion-list demo</title>
+  <title>spine-expansion-panel-list demo</title>
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
-  <link rel="import" href="../spine-floating-expansion-list.html">
+  <link rel="import" href="../spine-expansion-panel-list.html">
 </head>
 <body>
 
@@ -27,7 +27,7 @@
         font-size: 15px;
       }
     </style>
-    <spine-floating-expansion-list items="[[items]]">
+    <spine-expansion-panel-list items="[[items]]">
       <template>
         <div class="collapsed-item">
           <div>[[item.name]]</div>
@@ -40,7 +40,7 @@
           <a href="[[item.url]]">GitHub page</a>
         </div>
       </template>
-    </spine-floating-expansion-list>
+    </spine-expansion-panel-list>
   </template>
 
   <script>
@@ -52,7 +52,7 @@
           super();
 
           this.items = [
-            {name: 'spine-floating-expansion-list', url: 'https://github.com/SpineElements/spine-floating-expansion-list'},
+            {name: 'spine-expansion-panel-list', url: 'https://github.com/SpineElements/spine-expansion-panel-list'},
             {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
             {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
             {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
