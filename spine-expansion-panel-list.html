@@ -60,7 +60,7 @@ Custom property/mixin                         | Description                     
       :host {
         display: block;
 
-        ---shadow-and-separators-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
+        ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
       }
 
       #container ::slotted(.-spine-expansion-panel-list-item) {
@@ -70,17 +70,14 @@ Custom property/mixin                         | Description                     
         color: var(--primary-text-color, #000000);
         padding: 8px 16px;
         cursor: pointer;
+        transition: all 0.2s;
 
         @apply --spine-expansion-panel-list-item;
         overflow: hidden;
       }
 
-      #container ::slotted(.-spine-expansion-panel-list-item) {
-        transition: all 0.2s;
-      }
-
       #container ::slotted(.-spine-expansion-panel-list-item:not([expanded]):not([ends-collapsed-range])) {
-        border-bottom: 1px solid var(---shadow-and-separators-color);
+        border-bottom: 1px solid var(---spine-epl-divider-color);
       }
 
       #container ::slotted(.-spine-expansion-panel-list-item[expanded]) {
