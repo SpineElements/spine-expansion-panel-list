@@ -164,7 +164,7 @@
     });
 
     test('defaults are correct', () => {
-      let expandedItem = list.expandedItem;
+      const expandedItem = list.expandedItem;
       assert.isTrue(expandedItem === null || expandedItem === undefined,
           `expecting expandedItem to be null or undefined by default: ${expandedItem}`);
       assert.equal(list.items, testItems, 'Item assigned are preserved');
@@ -213,7 +213,7 @@
       });
 
       // set an item that is not included in the items list and check the rendered contents
-      let itemNotInTheList = {name: 'Item not in the list', url: 'http://localhost:8080'};
+      const itemNotInTheList = {name: 'Item not in the list', url: 'http://localhost:8080'};
       list.expandedItem = itemNotInTheList;
       assert.equal(list.expandedItem, itemNotInTheList,
           'Checking that expanded item is preserved for "extraneous" items');
