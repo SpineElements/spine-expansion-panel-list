@@ -11,14 +11,13 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "iron-list": "PolymerElements/iron-list#^2.0.14",
-    "paper-styles": "PolymerElements/paper-styles#^2.1.0",
-    "spine-test-helpers": "SpineElements/spine-test-helpers#^0.2.0"
+    "paper-styles": "PolymerElements/paper-styles#^2.1.0"
   },
   "devDependencies": {
-    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
     "web-component-tester": "Polymer/web-component-tester#^6.5.0",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "spine-test-helpers": "SpineElements/spine-test-helpers#^0.2.0"
   },
   "resolutions": {
     "polymer": "^2.0.0"
