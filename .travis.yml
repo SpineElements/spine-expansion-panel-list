@@ -12,6 +12,4 @@ before_script:
 - polymer install
 
 script:
-- polymer --version
-- xvfb-run polymer --version
-- xvfb-run polymer test --verbose
+- polymer test --verbose
