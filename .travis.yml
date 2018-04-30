@@ -14,4 +14,4 @@ before_script:
 script:
 - polymer --version
 - xvfb-run polymer --version
-- xvfb-run polymer -v test
+- xvfb-run polymer test --verbose
