@@ -12,4 +12,5 @@ before_script:
 - polymer install
 
 script:
+- node --version
 - polymer test --verbose
