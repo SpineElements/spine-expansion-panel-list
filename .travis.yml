@@ -3,6 +3,7 @@ node_js: lts/*
 sudo: required
 addons:
   firefox: latest
+  chrome: stable
 before_script:
   - npm install -g polymer-cli
   - npm install
