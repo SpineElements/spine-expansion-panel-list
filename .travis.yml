@@ -3,6 +3,8 @@ node_js: lts/*
 sudo: required
 addons:
   firefox: latest
-before_script: npm install -g polymer-cli
+before_script:
+  - npm install -g polymer-cli
+  - npm install
 script: xvfb-run polymer test --module-resolution=node --npm
 
