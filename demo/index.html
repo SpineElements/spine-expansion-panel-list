@@ -6,8 +6,7 @@
   <title>spine-expansion-panel-list demo</title>
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
-  <link rel="import" href="../spine-expansion-panel-list.html">
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
 </head>
 <body>
 
@@ -43,10 +42,15 @@
     </spine-expansion-panel-list>
   </template>
 
-  <script>
+  <script type="module">
+    import '../spine-expansion-panel-list.js';
+    import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+
     HTMLImports.whenReady(function () {
-      class DemoElement extends Polymer.Element {
-        static get is() { return 'demo-element'; }
+      class DemoElement extends PolymerElement {
+        static get is() {
+          return 'demo-element';
+        }
 
         constructor() {
           super();
