@@ -17,12 +17,12 @@
   "main": "spine-expansion-panel-list.js",
   "dependencies": {
     "@polymer/paper-styles": "^3.0.0-pre.18",
-    "@polymer/polymer": "^3.0.0",
-    "spine-test-helpers": "github:SpineElements/spine-test-helpers#convert-to-polymer-3"
+    "@polymer/polymer": "^3.0.0"
   },
   "devDependencies": {
     "wct-browser-legacy": "^0.0.1-pre.11",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "@polymer/iron-demo-helpers": "^3.0.0-pre.18"
+    "@polymer/iron-demo-helpers": "^3.0.0-pre.18",
+    "spine-test-helpers": "github:SpineElements/spine-test-helpers#convert-to-polymer-3"
   }
 }
