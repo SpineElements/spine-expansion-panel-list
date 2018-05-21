@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
   <title>spine-expansion-panel-list demo</title>
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
 </head>
 <body>
@@ -46,36 +45,34 @@
     import '../spine-expansion-panel-list.js';
     import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-    HTMLImports.whenReady(function () {
-      class DemoElement extends PolymerElement {
-        static get is() {
-          return 'demo-element';
-        }
-
-        constructor() {
-          super();
-
-          this.items = [
-            {name: 'spine-expansion-panel-list', url: 'https://github.com/SpineElements/spine-expansion-panel-list'},
-            {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
-            {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
-            {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
-            {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
-            {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
-            {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
-            {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
-            {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
-            {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
-            {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
-            {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
-            {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
-            {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
-          ];
-        }
+    class DemoElement extends PolymerElement {
+      static get is() {
+        return 'demo-element';
       }
 
-      window.customElements.define(DemoElement.is, DemoElement);
-    });
+      constructor() {
+        super();
+
+        this.items = [
+          {name: 'spine-expansion-panel-list', url: 'https://github.com/SpineElements/spine-expansion-panel-list'},
+          {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
+          {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
+          {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
+          {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
+          {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
+          {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
+          {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
+          {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
+          {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
+          {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
+          {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
+          {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
+          {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
+        ];
+      }
+    }
+
+    window.customElements.define(DemoElement.is, DemoElement);
   </script>
 </dom-module>
 

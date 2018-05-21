@@ -9,7 +9,6 @@
   <meta charset="UTF-8">
   <title>spine-expansion-panel-list test</title>
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
   <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
@@ -59,17 +58,15 @@
     import '../spine-expansion-panel-list.js';
     import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-    HTMLImports.whenReady(function () {
-      class TestElementContainer extends PolymerElement {
-        static get is() { return 'test-element-container'; }
+    class TestElementContainer extends PolymerElement {
+      static get is() { return 'test-element-container'; }
 
-        constructor() {
-          super();
-          this.items = testItems;
-        }
+      constructor() {
+        super();
+        this.items = testItems;
       }
-      window.customElements.define(TestElementContainer.is, TestElementContainer);
-    });
+    }
+    window.customElements.define(TestElementContainer.is, TestElementContainer);
   </script>
 </dom-module>
 
