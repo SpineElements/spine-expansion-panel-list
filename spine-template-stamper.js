@@ -1,15 +1,8 @@
 /*
-  ~ Copyright (c) 2000-2018 TeamDev. All rights reserved.
-  ~ TeamDev PROPRIETARY and CONFIDENTIAL.
-  ~ Use is subject to license terms.
-  */
-
-/*
-** This element is internal to the `spine-expansion-panel-list` implementation, and shouldn't be
-   used outside of this package. It can be changed in a backwards incompatible way or removed. **
-
-Renders an associated template into the light DOM of this element with the provided properties.
-*/
+ * Copyright (c) 2000-2018 TeamDev. All rights reserved.
+ * TeamDev PROPRIETARY and CONFIDENTIAL.
+ * Use is subject to license terms.
+ */
 
 import '@polymer/polymer/polymer-legacy.js';
 
@@ -17,6 +10,12 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { templatize } from '@polymer/polymer/lib/utils/templatize.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
+/**
+ * This element is internal to the `spine-expansion-panel-list` implementation, and shouldn't be
+ * used outside of this package. It can be changed in a backwards incompatible way or removed. **
+ *
+ * Renders an associated template into the light DOM of this element with the provided properties.
+ */
 class SpineTemplateStamper extends PolymerElement {
   static get template() {
     return html`
