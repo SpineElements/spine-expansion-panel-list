@@ -14,7 +14,8 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
 const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
-$_documentContainer.innerHTML = `<dom-module id="spine-expansion-panel-list">
+$_documentContainer.innerHTML = `
+<dom-module id="spine-expansion-panel-list">
   <template>
     <style>
       :host {
@@ -90,7 +91,6 @@ $_documentContainer.innerHTML = `<dom-module id="spine-expansion-panel-list">
     </dom-repeat>
   </template>
 
-  
 </dom-module>`;
 
 document.head.appendChild($_documentContainer.content);

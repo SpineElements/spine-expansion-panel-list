@@ -19,13 +19,13 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 class SpineTemplateStamper extends PolymerElement {
   static get template() {
     return html`
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
-    <slot></slot>
-`;
+      <style>
+        :host {
+          display: block;
+        }
+      </style>
+      <slot></slot>
+    `;
   }
 
   static get is() { return 'spine-template-stamper'; }
