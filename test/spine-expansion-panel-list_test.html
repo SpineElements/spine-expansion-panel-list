@@ -9,11 +9,10 @@
   <meta charset="UTF-8">
   <title>spine-expansion-panel-list test</title>
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
-  <link rel="import" href="../../spine-test-helpers/spine-test-helpers.html">
-  <link rel="import" href="../spine-expansion-panel-list.html">
+  <script type="module" src="../spine-expansion-panel-list.js"></script>
 </head>
 <body>
 <script>
@@ -55,18 +54,19 @@
     </div>
   </template>
 
-  <script>
-    HTMLImports.whenReady(function () {
-      class TestElementContainer extends Polymer.Element {
-        static get is() { return 'test-element-container'; }
+  <script type="module">
+    import '../spine-expansion-panel-list.js';
+    import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-        constructor() {
-          super();
-          this.items = testItems;
-        }
+    class TestElementContainer extends PolymerElement {
+      static get is() { return 'test-element-container'; }
+
+      constructor() {
+        super();
+        this.items = testItems;
       }
-      window.customElements.define(TestElementContainer.is, TestElementContainer);
-    });
+    }
+    window.customElements.define(TestElementContainer.is, TestElementContainer);
   </script>
 </dom-module>
 
@@ -76,7 +76,12 @@
   </template>
 </test-fixture>
 
-<script>
+<script type="module">
+  import {
+    runAsyncChain, checkNodeList, Checkers
+  } from '../node_modules/spine-test-helpers/spine-test-helpers.js';
+  import { flush } from '@polymer/polymer/lib/utils/flush.js';
+
   suite('<spine-expansion-panel-list>', function() {
     let listContainer;
     let list;
@@ -93,7 +98,7 @@
     // vertical distance in pixels between an expanded item and adjacent collapsed ones
     const defaultExpandedItemVertMargin = 16;
 
-    window.Checkers = Object.assign(window.Checkers || {}, {
+    Object.assign(Checkers || {}, {
       collapsedItemContents: itemModel => Checkers.element({
         name: 'div',
         hasClassNames: [classNames.collapsedItemContent],
@@ -157,7 +162,7 @@
 
     setup(() => {
       const testContainer = fixture('test-setup');
-      Polymer.flush();
+      flush();
 
       listContainer = testContainer.shadowRoot.querySelector('#list-container');
       list = listContainer.querySelector('#list');
@@ -181,7 +186,7 @@
       list.expandedItem = testItems[1];
       assert.equal(list.expandedItem, testItems[1],
           'Checking that `expandedItem` property is set correctly');
-      Polymer.flush();
+      flush();
       const collapsedItems = list.querySelectorAll(`.${classNames.collapsedItemContent}`);
       const expandedItems = list.querySelectorAll(`.${classNames.expandedItemContent}`);
       assert.equal(collapsedItems.length, testItems.length - 1, 'Checking the number of collapsed items');
@@ -207,7 +212,7 @@
         list.expandedItem = testItems[itemIndex];
         assert.equal(list.expandedItem, testItems[itemIndex],
             `Checking that expandedItem property is set correctly (itemIndex=${itemIndex})`);
-        Polymer.flush();
+        flush();
         checkItemContents(itemIndex,
             `Checking rendered item contents (expanded item index is ${itemIndex})`);
       });
@@ -217,7 +222,7 @@
       list.expandedItem = itemNotInTheList;
       assert.equal(list.expandedItem, itemNotInTheList,
           'Checking that expanded item is preserved for "extraneous" items');
-      Polymer.flush();
+      flush();
       checkItemContents(-1,
           'Checking rendered item contents when an "extraneous" item is requested to be expanded');
     });
@@ -233,7 +238,7 @@
       testItems.forEach((item, itemIndex) => {
         asyncCalls.push(() => {
           list.expandedItem = item;
-          Polymer.flush();
+          flush();
         });
         asyncCalls.push(() => {
           checkListItemsLayout(itemIndex);
