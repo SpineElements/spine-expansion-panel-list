@@ -14,7 +14,7 @@ with `class="expanded"` attribute.
 Example:
 ```
 <spine-expansion-panel-list
-    items="${attachments}">
+    items="${attachments}"
 
     collapsedItemRenderer="${item => html`
       <div>Name: ${item.name}</div>

@@ -24,7 +24,7 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
  * Example:
  * ```
  * <spine-expansion-panel-list
- *     items="${attachments}">
+ *     items="${attachments}"
  *
  *     collapsedItemRenderer="${item => html`
  *       <div>Name: ${item.name}</div>
