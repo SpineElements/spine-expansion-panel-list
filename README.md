@@ -1,4 +1,5 @@
 # spine-expansion-panel-list
+
 An element that displays an associated array of items as a list of panels showing a summary view
 for each item, and allows expanding any item to display a full item view.
 
@@ -16,13 +17,13 @@ Example:
     items="${attachments}">
 
     collapsedItemRenderer="${item => html`
-      <div>Name: [[item.name]]</div>
-      <div>Size: [[item.size]]</div>
+      <div>Name: ${item.name}</div>
+      <div>Size: ${item.size}</div>
     `}"
 
     expandedItemRenderer="${item => html`
-      <div>Name: [[item.name]]</div>
-      <img src="[[item.imageUrl]]>
+      <div>Name: ${item.name}</div>
+      <img src="${item.imageUrl}">
     `}">
 </spine-expansion-panel-list>
 ```
