@@ -4,108 +4,24 @@
  * Use is subject to license terms.
  */
 
-import '@polymer/polymer/polymer-legacy.js';
+import {LitElement, html} from '@polymer/lit-element';
+import {render} from 'lit-html/lit-html.js';
 
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import '@polymer/paper-styles/shadow.js';
 import './spine-template-stamper.js';
-import { DomModule } from '@polymer/polymer/lib/elements/dom-module.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
-const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
-$_documentContainer.innerHTML = `
-<dom-module id="spine-expansion-panel-list">
-  <template>
-    <style>
-      :host {
-        display: block;
-
-        ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
-      }
-
-      #container ::slotted(.-spine-expansion-panel-list-item) {
-        margin: 0 var(--spine-expansion-panel-list-expansion-size, 20px);
-        @apply --shadow-elevation-2dp;
-        background: var(--primary-background-color, #ffffff);
-        color: var(--primary-text-color, #000000);
-        padding: 8px 16px;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        @apply --spine-expansion-panel-list-item;
-        overflow: hidden;
-      }
-
-      #container ::slotted(.-spine-expansion-panel-list-item:not([expanded]):not([ends-collapsed-range])) {
-        border-bottom: 1px solid var(---spine-epl-divider-color);
-      }
-
-      #container ::slotted(.-spine-expansion-panel-list-item[expanded]) {
-        margin: 16px 0;
-        @apply --shadow-elevation-8dp;
-
-        cursor: default;
-
-        @apply --spine-expansion-panel-list-expanded-item;
-      }
-    </style>
-
-    <div id="container">
-      <slot></slot>
-    </div>
-  </template>
-
-  <template id="light-dom-template">
-    <dom-repeat items="[[items]]">
-      <template>
-        <div class="-spine-expansion-panel-list-item" expanded\$="[[_isItemExpanded(item, _expandedItem)]]" ends-collapsed-range\$="[[_getItemEndsCollapsedRange(item, _expandedItem)]]" on-click="_handleItemClick">
-          <div class="-spine-expansion-panel-list-item-content">
-            <dom-if if="[[!_useItemExpandedTemplate(item, _expandedItem)]]" restamp="">
-              <template>
-                <!--
-                  The "overflow: hidden" style is added below to prevent collapsing the stamper
-                  children's margins, e.g. if <h2> is placed as the first template's tag,
-                  see this approach here: https://stackoverflow.com/a/19719427
-                  This is needed for a proper "height: auto" animation in
-                  \`_handleExpandedItemChange\` method.
-
-                  Inplace style is used instead of a dedicated CSS rule since this template is
-                  rendered in the element's light DOM (not shadow DOM), and the ::slotted CSS
-                  selector can target only top-level slot nodes, as noted here:
-                  https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
-                -->
-                <spine-template-stamper custom-template="[[__collapsedTemplate]]" props="[[_getStamperProperties(item)]]" style="overflow: hidden">
-                </spine-template-stamper>
-              </template>
-            </dom-if>
-            <dom-if if="[[_useItemExpandedTemplate(item, _expandedItem)]]" restamp="">
-              <template>
-                <spine-template-stamper custom-template="[[__expandedTemplate]]" props="[[_getStamperProperties(item)]]" style="overflow: hidden">
-                </spine-template-stamper>
-              </template>
-            </dom-if>
-          </div>
-        </div>
-      </template>
-    </dom-repeat>
-  </template>
-
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
-
 /**
- * An element that displays an associated array of items as a list of panels showing a summary view for
- * each item, and allows expanding any item to display a full item view.
+ * An element that displays an associated array of items as a list of panels showing a summary view
+ * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item in the nested
  * `template` element. This template will be stamped for each of the provided items with a different
  * value of the `item` variable, which can be used inside the template's elements to refer to the
  * respective item object.
  *
- * A template for an expanded item can be specified using an additional nested `template` element with
- * `class="expanded"` attribute.
+ * A template for an expanded item can be specified using an additional nested `template` element
+ * with `class="expanded"` attribute.
  *
  * Example:
  * ```
@@ -138,62 +54,143 @@ document.head.appendChild($_documentContainer.content);
  * `--spine-expansion-panel-list-expansion-size` | Size by which an expanded item's left/right edges stand out relative to the side edges of collapsed items | `20px`
  *
  */
-class SpineFloatingExpansionList extends PolymerElement {
-  static get is() { return 'spine-expansion-panel-list'; }
-
+class SpineFloatingExpansionList extends LitElement {
   static get properties() {
     return {
-      items: {
-        type: Array
-      },
-      expandedItem: {
-        type: Object,
-        notify: true,
-        observer: '_handleExpandedItemChange'
-      },
+      items: Array,
+      expandedItem: Object,
+      renderCollapsedItem: Function,
+      renderExpandedItem: Function,
       /**
-       * This property is an internal mirror of the `expandedItems` property, and it is needed
+       * This property is an internal mirror of the `expandedItem` property, and it is needed
        * instead of just using the `expandedItem` property in order to be able to measure and
        * update item heights before the `_expandedItem` that is bound to the elements is
-       * changed, which is needed for proper item height animation (see the
+       * changed, which is needed for a proper item height animation (see the
        * `_handleExpandedItemChange` method).
        */
-      _expandedItem: {
-        type: Object
-      }
+      _expandedItem: Object
     }
   }
 
   constructor() {
     super();
+    this.items = [];
     this._documentClickListener = (event) => {
       this._handleDocumentClick(event)
     }
   }
 
-  static get _lightDomTemplate() {
-    if (!this.__lightDomTemplate) {
-      this.__lightDomTemplate =
-          DomModule.import(SpineFloatingExpansionList.is, "#light-dom-template");
+  _render(props) {
+    return html`
+      <style>
+        :host {
+          display: block;
+  
+          ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
+        }
+  
+        #container ::slotted(.-spine-expansion-panel-list-item) {
+          margin: 0 var(--spine-expansion-panel-list-expansion-size, 20px);
+          @apply --shadow-elevation-2dp;
+          background: var(--primary-background-color, #ffffff);
+          color: var(--primary-text-color, #000000);
+          padding: 8px 16px;
+          cursor: pointer;
+          transition: all 0.2s;
+  
+          @apply --spine-expansion-panel-list-item;
+          overflow: hidden;
+        }
+  
+        #container ::slotted(.-spine-expansion-panel-list-item:not([expanded]):not([ends-collapsed-range])) {
+          border-bottom: 1px solid var(---spine-epl-divider-color);
+        }
+  
+        #container ::slotted(.-spine-expansion-panel-list-item[expanded]) {
+          margin: 16px 0;
+          @apply --shadow-elevation-8dp;
+  
+          cursor: default;
+  
+          @apply --spine-expansion-panel-list-expanded-item;
+        }
+      </style>
+  
+      <div id="container">
+        <slot></slot>
+      </div>    
+    `;
+  }
+
+  /**
+   * Similar to `_render`, but renders content that should be placed in an element's light DOM.
+   *
+   * The item elements, with their respective custom content templates that have been provided via
+   * `renderCollapsedItem` and `renderExpandedItem` properties, have to be rendered into element's
+   * light DOM and not shadow DOM.
+   *
+   * This is needed for their style to be customizable with CSS declarations present in the
+   * context where the `spine-expansion-panel-list` element is used.
+   */
+  _renderLightDOM({items, _expandedItem, renderCollapsedItem, renderExpandedItem}) {
+    return html`${
+      items.map(item => html`
+        <div class="-spine-expansion-panel-list-item" 
+             expanded$="${this._isItemExpanded(item, _expandedItem)}" 
+             ends-collapsed-range="${this._getItemEndsCollapsedRange(item, _expandedItem)}" 
+             on-click="${e => this._handleItemClick(item)}">
+          <div class="-spine-expansion-panel-list-item-content">
+            ${!this._useItemExpandedTemplate(item, _expandedItem) ?
+              html`
+                <!--
+                  The "overflow: hidden" style is added below to prevent collapsing the stamper
+                  children's margins, e.g. if <h2> is placed as the first template's tag,
+                  see this approach here: https://stackoverflow.com/a/19719427
+                  This is needed for a proper "height: auto" animation in
+                  \`_handleExpandedItemChange\` method.
+
+                  Inplace style is used instead of a dedicated CSS rule since this template is
+                  rendered in the element's light DOM (not shadow DOM), and the ::slotted CSS
+                  selector can target only top-level slot nodes, as noted here:
+                  https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
+                -->
+                <div style="overflow: hidden">
+                  ${renderCollapsedItem(item)}
+                </div>
+              `
+              :
+              html`                  
+                <div style="overflow: hidden"> 
+                  ${renderExpandedItem(item)}                      
+                </div>
+              `
+            }
+          </div>
+        </div>
+      `)
+    }`;
+  }
+
+  /**
+   * @override
+   */
+  _applyRender(result, node) {
+    // render shadow DOM tree
+    super._applyRender(result, node);
+
+    // render light DOM tree
+    const {items, _expandedItem, renderCollapsedItem, renderExpandedItem} = this;
+    const lightDOMTemplateResult = this._renderLightDOM(
+        {items, _expandedItem, renderCollapsedItem, renderExpandedItem}
+    );
+    render(lightDOMTemplateResult, this);
+  }
+
+  _propertiesChanged(props, changedProps, oldProps) {
+    super._propertiesChanged(props, changedProps, oldProps);
+    if (changedProps && changedProps.expandedItem !== undefined) {
+      this._handleExpandedItemChange();
     }
-    return this.__lightDomTemplate;
-  }
-
-  ready() {
-    this.__collapsedTemplate = this.querySelector('template:not(.expanded)');
-    this.__expandedTemplate = this.querySelector('template.expanded');
-
-    super.ready();
-
-    const stampedTemplate = this._stampTemplate(this.constructor._lightDomTemplate);
-    // the item elements need to be placed in light DOM so that their style could be customized
-    // with CSS declarations in the context where the `spine-expansion-panel-list` element
-    // is used and where the appropriate item templates are provided
-    this.appendChild(stampedTemplate);
-  }
-
-  _getStamperProperties(item) {
-    return {item};
   }
 
   _isItemExpanded(item, expandedItem) {
@@ -218,11 +215,12 @@ class SpineFloatingExpansionList extends PolymerElement {
   }
 
   _useItemExpandedTemplate(item, expandedItem) {
-    return this._isItemExpanded(item, expandedItem) && this.__expandedTemplate != null;
+    return this._isItemExpanded(item, expandedItem) && this.renderExpandedItem != null;
   }
 
-  _handleItemClick(event) {
-    this.expandedItem = event.model.item;
+  _handleItemClick(item) {
+    this.expandedItem = item;
+    this.dispatchEvent(new CustomEvent('expanded-item-changed'));
   }
 
   _getItemElements() {
@@ -270,7 +268,7 @@ class SpineFloatingExpansionList extends PolymerElement {
     // we need to set the fixed initial item heights instead of 'auto' values in order for
     // the height transition animation to work (which doesn't work with 'auto' values)
     itemHeightsToAnimate.forEach(setItemHeightByContent);
-    this.set('_expandedItem', this.expandedItem);
+    this._expandedItem = this.expandedItem;
     microTask.run(() => {
       if (!this.ownerDocument) {
         // skip further animation if the element was removed from the document already
@@ -311,4 +309,4 @@ class SpineFloatingExpansionList extends PolymerElement {
   }
 }
 
-window.customElements.define(SpineFloatingExpansionList.is, SpineFloatingExpansionList);
+window.customElements.define('spine-expansion-panel-list', SpineFloatingExpansionList);
