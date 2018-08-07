@@ -4,11 +4,9 @@
  * Use is subject to license terms.
  */
 
-import {LitElement, html} from '@polymer/lit-element';
 import {render} from 'lit-html/lit-html.js';
-
+import {LitElement, html} from '@polymer/lit-element';
 import '@polymer/paper-styles/shadow.js';
-import './spine-template-stamper.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
 /**
@@ -29,13 +27,13 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
  *     items="${attachments}">
  *
  *     collapsedItemRenderer="${item => html`
- *       <div>Name: [[item.name]]</div>
- *       <div>Size: [[item.size]]</div>
+ *       <div>Name: ${item.name}</div>
+ *       <div>Size: ${item.size}</div>
  *     `}"
  *
  *     expandedItemRenderer="${item => html`
- *       <div>Name: [[item.name]]</div>
- *       <img src="[[item.imageUrl]]>
+ *       <div>Name: ${item.name}</div>
+ *       <img src="${item.imageUrl}">
  *     `}">
  * </spine-expansion-panel-list>
  * ```
