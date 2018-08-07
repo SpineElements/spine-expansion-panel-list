@@ -25,15 +25,18 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
  *
  * Example:
  * ```
- * <spine-expansion-panel-list items="[[attachments]]">
- *   <template>
- *     <div>Name: [[item.name]]</div>
- *     <div>Size: [[item.size]]</div>
- *   </template>
- *   <template class="expanded">
- *     <div>Name: [[item.name]]</div>
- *     <img src="[[item.imageUrl]]>
- *   </template>
+ * <spine-expansion-panel-list
+ *     items="${attachments}">
+ *
+ *     collapsedItemRenderer="${item => html`
+ *       <div>Name: [[item.name]]</div>
+ *       <div>Size: [[item.size]]</div>
+ *     `}"
+ *
+ *     expandedItemRenderer="${item => html`
+ *       <div>Name: [[item.name]]</div>
+ *       <img src="[[item.imageUrl]]>
+ *     `}">
  * </spine-expansion-panel-list>
  * ```
  *
@@ -75,9 +78,7 @@ class SpineFloatingExpansionList extends LitElement {
   constructor() {
     super();
     this.items = [];
-    this._documentClickListener = (event) => {
-      this._handleDocumentClick(event)
-    }
+    this._handleDocumentClick = this._handleDocumentClick.bind(this);
   }
 
   _render(props) {
@@ -136,35 +137,27 @@ class SpineFloatingExpansionList extends LitElement {
     return html`${
       items.map(item => html`
         <div class="-spine-expansion-panel-list-item" 
-             expanded$="${this._isItemExpanded(item, _expandedItem)}" 
+             expanded$="${(item === _expandedItem)}" 
              ends-collapsed-range="${this._getItemEndsCollapsedRange(item, _expandedItem)}" 
              on-click="${e => this._handleItemClick(item)}">
           <div class="-spine-expansion-panel-list-item-content">
-            ${!this._useItemExpandedTemplate(item, _expandedItem) ?
-              html`
-                <!--
-                  The "overflow: hidden" style is added below to prevent collapsing the stamper
-                  children's margins, e.g. if <h2> is placed as the first template's tag,
-                  see this approach here: https://stackoverflow.com/a/19719427
-                  This is needed for a proper "height: auto" animation in
-                  \`_handleExpandedItemChange\` method.
+            <!--
+              The "overflow: hidden" style is added below to prevent collapsing the stamper
+              children's margins, e.g. if <h2> is placed as the first template's tag,
+              see this approach here: https://stackoverflow.com/a/19719427
+              This is needed for a proper "height: auto" animation in
+              \`_handleExpandedItemChange\` method.
 
-                  Inplace style is used instead of a dedicated CSS rule since this template is
-                  rendered in the element's light DOM (not shadow DOM), and the ::slotted CSS
-                  selector can target only top-level slot nodes, as noted here:
-                  https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
-                -->
-                <div style="overflow: hidden">
-                  ${renderCollapsedItem(item)}
-                </div>
-              `
-              :
-              html`                  
-                <div style="overflow: hidden"> 
-                  ${renderExpandedItem(item)}                      
-                </div>
-              `
-            }
+              Inplace style is used instead of a dedicated CSS rule since this template is
+              rendered in the element's light DOM (not shadow DOM), and the ::slotted CSS
+              selector can target only top-level slot nodes, as noted here:
+              https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
+            -->
+            <div style="overflow: hidden">${
+              item !== _expandedItem || !this.renderExpandedItem
+                ? renderCollapsedItem(item)
+                : renderExpandedItem(item)
+            }</div>
           </div>
         </div>
       `)
@@ -186,15 +179,21 @@ class SpineFloatingExpansionList extends LitElement {
     render(lightDOMTemplateResult, this);
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('click', this._handleDocumentClick);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this._handleDocumentClick);
+  }
+
   _propertiesChanged(props, changedProps, oldProps) {
     super._propertiesChanged(props, changedProps, oldProps);
     if (changedProps && changedProps.expandedItem !== undefined) {
       this._handleExpandedItemChange();
     }
-  }
-
-  _isItemExpanded(item, expandedItem) {
-    return item === expandedItem;
   }
 
   _getItemEndsCollapsedRange(item, expandedItem) {
@@ -212,10 +211,6 @@ class SpineFloatingExpansionList extends LitElement {
       return false;
     }
     return itemIndex === expandedItemIndex - 1;
-  }
-
-  _useItemExpandedTemplate(item, expandedItem) {
-    return this._isItemExpanded(item, expandedItem) && this.renderExpandedItem != null;
   }
 
   _handleItemClick(item) {
@@ -286,16 +281,6 @@ class SpineFloatingExpansionList extends LitElement {
         itemHeightsToAnimate.forEach(setItemHeightAuto);
       }, transitionDuration);
     });
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener('click', this._documentClickListener);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener('click', this._documentClickListener);
   }
 
   _handleDocumentClick(event) {

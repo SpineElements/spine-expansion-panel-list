@@ -1,26 +1,29 @@
 # spine-expansion-panel-list
-An element that displays an associated array of items as a list of panels showing a summary view for
-each item, and allows expanding any item to display a full item view.
+An element that displays an associated array of items as a list of panels showing a summary view
+for each item, and allows expanding any item to display a full item view.
 
 You can specify the template for the content that should be displayed for each item in the nested
 `template` element. This template will be stamped for each of the provided items with a different
 value of the `item` variable, which can be used inside the template's elements to refer to the
 respective item object.
 
-A template for an expanded item can be specified using an additional nested `template` element with
-`class="expanded"` attribute.
+A template for an expanded item can be specified using an additional nested `template` element
+with `class="expanded"` attribute.
 
 Example:
 ```
-<spine-expansion-panel-list items="[[attachments]]">
-  <template>
-    <div>Name: [[item.name]]</div>
-    <div>Size: [[item.size]]</div>
-  </template>
-  <template class="expanded">
-    <div>Name: [[item.name]]</div>
-    <img src="[[item.imageUrl]]>
-  </template>
+<spine-expansion-panel-list
+    items="${attachments}">
+
+    collapsedItemRenderer="${item => html`
+      <div>Name: [[item.name]]</div>
+      <div>Size: [[item.size]]</div>
+    `}"
+
+    expandedItemRenderer="${item => html`
+      <div>Name: [[item.name]]</div>
+      <img src="[[item.imageUrl]]>
+    `}">
 </spine-expansion-panel-list>
 ```
 
