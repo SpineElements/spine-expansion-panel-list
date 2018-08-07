@@ -137,8 +137,8 @@ class SpineFloatingExpansionList extends LitElement {
     return html`${
       items.map(item => html`
         <div class="-spine-expansion-panel-list-item" 
-             expanded$="${(item === _expandedItem)}" 
-             ends-collapsed-range="${this._getItemEndsCollapsedRange(item, _expandedItem)}" 
+             expanded?="${(item === _expandedItem)}" 
+             ends-collapsed-range?="${this._getItemEndsCollapsedRange(item, _expandedItem)}" 
              on-click="${e => this._handleItemClick(item)}">
           <div class="-spine-expansion-panel-list-item-content">
             <!--
