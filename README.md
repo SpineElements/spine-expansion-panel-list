@@ -28,6 +28,10 @@ Example:
 </spine-expansion-panel-list>
 ```
 
+This element dispatches the non-bubbling `expanded-item-changed` event when the expanded item is
+changed. You can read the `event.detail.expandedItem` property from the dispatched `event` to
+detect which item has been expanded (will be `null` if no items are expanded).
+
 ### Styling
 
 The templates provided are stamped in the light DOM of the `spine-expansion-panel-list` element,

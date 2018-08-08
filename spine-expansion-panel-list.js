@@ -61,9 +61,32 @@ import '@polymer/paper-styles/shadow.js';
 class SpineFloatingExpansionList extends LitElement {
   static get properties() {
     return {
+      /**
+       * An array of objects (or values of other type) that identify the list of items being
+       * rendered by this component. Each item in this array is used as a model that will be passed
+       * to an item template rendering function when a corresponding item is rendered. See the
+       * `renderCollapsedItem` and `renderExpandedItem` properties.
+       *
+       * A component's user is free to choose any type and form of the item objects provided in this
+       * array.
+       */
       items: Array,
+      /**
+       * This property can be used for detecting and changing the currently expanded item. It is
+       * expected to be one of the values in the `items` array.
+       */
       expandedItem: Object,
+      /**
+       * A function for rendering collapsed items. It receives an item from the `items` array, and
+       * returns the lit-html's `TemplateResult` that corresponds to the content that should be
+       * rendered for this item.
+       */
       renderCollapsedItem: Function,
+      /**
+       * A function for rendering expanded items. It receives an item from the `items` array, and
+       * returns the lit-html's `TemplateResult` that corresponds to the content that should be
+       * rendered for this item.
+       */
       renderExpandedItem: Function
     }
   }
