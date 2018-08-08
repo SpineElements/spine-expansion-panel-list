@@ -3,25 +3,25 @@
 An element that displays an associated array of items as a list of panels showing a summary view
 for each item, and allows expanding any item to display a full item view.
 
-You can specify the template for the content that should be displayed for each item in the nested
-`template` element. This template will be stamped for each of the provided items with a different
-value of the `item` variable, which can be used inside the template's elements to refer to the
-respective item object.
+You can specify the template for the content that should be displayed for each item using the
+`renderCollapsedItem` property, which should be declared as a function that accepts an item as a
+ parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
+ used for rendering each of the provided items.
 
-A template for an expanded item can be specified using an additional nested `template` element
-with `class="expanded"` attribute.
+A template for an expanded item can be specified using the `renderExpandedItem` property, which
+works the same as `renderCollapsedItem`, but is invoked for rendering an expanded item.
 
 Example:
 ```
 <spine-expansion-panel-list
     items="${attachments}"
 
-    collapsedItemRenderer="${item => html`
+    renderCollapsedItem="${item => html`
       <div>Name: ${item.name}</div>
       <div>Size: ${item.size}</div>
     `}"
 
-    expandedItemRenderer="${item => html`
+    renderExpandedItem="${item => html`
       <div>Name: ${item.name}</div>
       <img src="${item.imageUrl}">
     `}">

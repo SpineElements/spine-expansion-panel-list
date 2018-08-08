@@ -12,25 +12,25 @@ import '@polymer/paper-styles/shadow.js';
  * An element that displays an associated array of items as a list of panels showing a summary view
  * for each item, and allows expanding any item to display a full item view.
  *
- * You can specify the template for the content that should be displayed for each item in the nested
- * `template` element. This template will be stamped for each of the provided items with a different
- * value of the `item` variable, which can be used inside the template's elements to refer to the
- * respective item object.
+ * You can specify the template for the content that should be displayed for each item using the
+ * `renderCollapsedItem` property, which should be declared as a function that accepts an item as a
+ *  parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
+ *  used for rendering each of the provided items.
  *
- * A template for an expanded item can be specified using an additional nested `template` element
- * with `class="expanded"` attribute.
+ * A template for an expanded item can be specified using the `renderExpandedItem` property, which
+ * works the same as `renderCollapsedItem`, but is invoked for rendering an expanded item.
  *
  * Example:
  * ```
  * <spine-expansion-panel-list
  *     items="${attachments}"
  *
- *     collapsedItemRenderer="${item => html`
+ *     renderCollapsedItem="${item => html`
  *       <div>Name: ${item.name}</div>
  *       <div>Size: ${item.size}</div>
  *     `}"
  *
- *     expandedItemRenderer="${item => html`
+ *     renderExpandedItem="${item => html`
  *       <div>Name: ${item.name}</div>
  *       <img src="${item.imageUrl}">
  *     `}">
@@ -159,8 +159,8 @@ class SpineFloatingExpansionList extends LitElement {
              on-click="${e => this._handleItemClick(item)}">
           <div class="-spine-expansion-panel-list--item-content">
             <!--
-              The "overflow: hidden" style is added below to prevent collapsing the stamper
-              children's margins, e.g. if <h2> is placed as the first template's tag,
+              The "overflow: hidden" style is added below to prevent collapsing the custom
+              template children's margins, e.g. if <h2> is placed as the first template's tag,
               see this approach here: https://stackoverflow.com/a/19719427
               This is needed for a proper "height: auto" animation in
               the \`_handleExpandedItemChange\` method.
@@ -178,7 +178,7 @@ class SpineFloatingExpansionList extends LitElement {
           </div>
         </div>
       `)
-        }`;
+    }`;
   }
 
   /**
