@@ -114,7 +114,7 @@ class SpineFloatingExpansionList extends LitElement {
           color: var(--primary-text-color, #000000);
           padding: 8px 16px;
           cursor: pointer;
-          transition: all 5.2s;
+          transition: all 0.2s;
   
           @apply --spine-expansion-panel-list-item;
           overflow: hidden;
