@@ -34,41 +34,39 @@
   ];
 </script>
 
-<dom-module id="test-element-container">
-  <template>
-    <div id="list-container">
-      <spine-expansion-panel-list id="list" items="[[items]]">
-        <template>
-          <div class="collapsed-test-item">
-            <div>[[item.name]]</div>
-            <a href="[[item.url]]">GitHub page</a>
-          </div>
-        </template>
-        <template class="expanded">
-          <div class="expanded-test-item">
-            <h2>[[item.name]]</h2>
-            <a href="[[item.url]]">GitHub page</a>
-          </div>
-        </template>
-      </spine-expansion-panel-list>
-    </div>
-  </template>
+<script type="module">
+  import {LitElement, html} from '@polymer/lit-element';
+  import '../spine-expansion-panel-list.js';
 
-  <script type="module">
-    import '../spine-expansion-panel-list.js';
-    import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
-    class TestElementContainer extends PolymerElement {
-      static get is() { return 'test-element-container'; }
-
-      constructor() {
-        super();
-        this.items = testItems;
-      }
+  class TestElementContainer extends LitElement {
+    constructor() {
+      super();
+      this.items = testItems;
     }
-    window.customElements.define(TestElementContainer.is, TestElementContainer);
-  </script>
-</dom-module>
+    _render() {
+      return html`
+        <div id="list-container">
+          <spine-expansion-panel-list id="list"
+            items="${this.items}"
+            renderCollapsedItem="${item => html`
+              <div class="collapsed-test-item">
+                <div>${item.name}</div>
+                <a href="${item.url}">GitHub page</a>
+              </div>
+            `}"
+            renderExpandedItem="${item => html`
+              <div class="expanded-test-item">
+                <h2>${item.name}</h2>
+                <a href="${item.url}">GitHub page</a>
+              </div>
+            `}"
+          </spine-expansion-panel-list>
+        </div>
+      `;
+    }
+  }
+  window.customElements.define('test-element-container', TestElementContainer);
+</script>
 
 <test-fixture id="test-setup">
   <template>
@@ -78,9 +76,8 @@
 
 <script type="module">
   import {
-    runAsyncChain, checkNodeList, Checkers
+    asyncDelay, runAsyncChain, checkNodes, Checkers
   } from '../node_modules/spine-test-helpers/spine-test-helpers.js';
-  import { flush } from '@polymer/polymer/lib/utils/flush.js';
 
   suite('<spine-expansion-panel-list>', function() {
     let listContainer;
@@ -102,10 +99,10 @@
       collapsedItemContents: itemModel => Checkers.element({
         name: 'div',
         hasClassNames: [classNames.collapsedItemContent],
-        childNodeCheckers: [
+        childNodes: [
           Checkers.element({
             name: 'div',
-            innerHTML: itemModel.name
+            innerText: itemModel.name
           }),
           Checkers.element({
             name: 'a',
@@ -118,10 +115,10 @@
       expandedItemContents: itemModel => Checkers.element({
         name: 'div',
         hasClassNames: [classNames.expandedItemContent],
-        childNodeCheckers: [
+        childNodes: [
           Checkers.element({
             name: 'h2',
-            innerHTML: itemModel.name
+            innerText: itemModel.name
           }),
           Checkers.element({
             name: 'a',
@@ -162,8 +159,6 @@
 
     setup(() => {
       const testContainer = fixture('test-setup');
-      flush();
-
       listContainer = testContainer.shadowRoot.querySelector('#list-container');
       list = listContainer.querySelector('#list');
     });
@@ -178,51 +173,53 @@
     test('number of rendered items is correct (all items collapsed)', () => {
       const collapsedItems = list.querySelectorAll(`.${classNames.collapsedItemContent}`);
       const expandedItems = list.querySelectorAll(`.${classNames.expandedItemContent}`);
-      assert.equal(collapsedItems.length, testItems.length, 'Checking the number of collapsed items');
+      assert.equal(collapsedItems.length, testItems.length,
+          'Checking the number of collapsed items');
       assert.equal(expandedItems.length, 0, 'Checking the number of expanded items');
     });
 
-    test('number of rendered items is correct (contains an expanded item)', () => {
+    test('number of rendered items is correct (contains an expanded item)', async () => {
       list.expandedItem = testItems[1];
       assert.equal(list.expandedItem, testItems[1],
           'Checking that `expandedItem` property is set correctly');
-      flush();
+      await asyncDelay();
       const collapsedItems = list.querySelectorAll(`.${classNames.collapsedItemContent}`);
       const expandedItems = list.querySelectorAll(`.${classNames.expandedItemContent}`);
-      assert.equal(collapsedItems.length, testItems.length - 1, 'Checking the number of collapsed items');
+      assert.equal(collapsedItems.length, testItems.length - 1,
+          'Checking the number of collapsed items');
       assert.equal(expandedItems.length, 1, 'Checking the number of expanded items');
     });
 
-    test('rendered item contents are correct', () => {
-      const checkItemContents = (expandedItemIndex, message) => {
+    test('rendered item contents are correct', async () => {
+      const checkItemContents = (expandedItem, message) => {
         const itemElements = list.querySelectorAll(
             `.${classNames.collapsedItemContent}, .${classNames.expandedItemContent}`);
-        checkNodeList(itemElements, null, testItems.map((itemModel, itemIndex) =>
-            itemIndex === expandedItemIndex
-                ? Checkers.expandedItemContents(itemModel)
-                : Checkers.collapsedItemContents(itemModel)
+        checkNodes(itemElements, null, testItems.map(item =>
+            item === expandedItem
+                ? Checkers.expandedItemContents(item)
+                : Checkers.collapsedItemContents(item)
         ), message);
       };
 
       // first, check the default expansion state
-      checkItemContents(-1, 'Checking rendered item contents with all items collapsed');
+      checkItemContents(null, 'Checking rendered item contents with all items collapsed');
 
       // expand items one by one and check the rendered contents on each stage
-      testItems.forEach((item, itemIndex) => {
-        list.expandedItem = testItems[itemIndex];
-        assert.equal(list.expandedItem, testItems[itemIndex],
-            `Checking that expandedItem property is set correctly (itemIndex=${itemIndex})`);
-        flush();
-        checkItemContents(itemIndex,
-            `Checking rendered item contents (expanded item index is ${itemIndex})`);
-      });
+      for (const item of testItems) {
+        list.expandedItem = item;
+        assert.equal(list.expandedItem, item,
+            `Checking that expandedItem property is set correctly (item.name == ${item.name})`);
+        await asyncDelay();
+        checkItemContents(item,
+            `Checking rendered item contents (expanded item.name == ${item.name})`);
+      }
 
       // set an item that is not included in the items list and check the rendered contents
       const itemNotInTheList = {name: 'Item not in the list', url: 'http://localhost:8080'};
       list.expandedItem = itemNotInTheList;
       assert.equal(list.expandedItem, itemNotInTheList,
           'Checking that expanded item is preserved for "extraneous" items');
-      flush();
+      await asyncDelay();
       checkItemContents(-1,
           'Checking rendered item contents when an "extraneous" item is requested to be expanded');
     });
@@ -238,7 +235,6 @@
       testItems.forEach((item, itemIndex) => {
         asyncCalls.push(() => {
           list.expandedItem = item;
-          flush();
         });
         asyncCalls.push(() => {
           checkListItemsLayout(itemIndex);

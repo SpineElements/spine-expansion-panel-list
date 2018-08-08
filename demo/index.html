@@ -9,72 +9,84 @@
 </head>
 <body>
 
-<dom-module id="demo-element">
-  <template>
-    <style>
-      .collapsed-item {
-        display: flex;
-      }
-      .collapsed-item div {
-        flex: 1 1 auto;
-      }
-      .expanded-item {
-        padding: 0 0 16px;
-      }
-      .expanded-item a {
-        font-size: 15px;
-      }
-    </style>
-    <spine-expansion-panel-list items="[[items]]">
-      <template>
-        <div class="collapsed-item">
-          <div>[[item.name]]</div>
-          <a href="[[item.url]]">GitHub page</a>
-        </div>
-      </template>
-      <template class="expanded">
-        <div class="expanded-item">
-          <h2>[[item.name]]</h2>
-          <a href="[[item.url]]">GitHub page</a>
-        </div>
-      </template>
-    </spine-expansion-panel-list>
-  </template>
+<script type="module">
+  import {LitElement, html} from '@polymer/lit-element';
+  import '../spine-expansion-panel-list.js';
 
-  <script type="module">
-    import '../spine-expansion-panel-list.js';
-    import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
-    class DemoElement extends PolymerElement {
-      static get is() {
-        return 'demo-element';
-      }
-
-      constructor() {
-        super();
-
-        this.items = [
-          {name: 'spine-expansion-panel-list', url: 'https://github.com/SpineElements/spine-expansion-panel-list'},
-          {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
-          {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
-          {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
-          {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
-          {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
-          {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
-          {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
-          {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
-          {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
-          {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
-          {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
-          {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
-          {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
-        ];
+  class DemoElement extends LitElement {
+    static get properties() {
+      return {
+        expandedItem: Object
       }
     }
+    constructor() {
+      super();
 
-    window.customElements.define(DemoElement.is, DemoElement);
-  </script>
-</dom-module>
+      this.items = [
+        {name: 'spine-expansion-panel-list', url: 'https://github.com/SpineElements/spine-expansion-panel-list'},
+        {name: 'spine-test-helpers', url: 'https://github.com/SpineElements/spine-test-helpers'},
+        {name: 'spine-avatar', url: 'https://github.com/SpineElements/spine-avatar'},
+        {name: 'spine-badge', url: 'https://github.com/SpineElements/spine-badge'},
+        {name: 'spine-item-elements', url: 'https://github.com/SpineElements/spine-item-elements'},
+        {name: 'spine-color-picker', url: 'https://github.com/SpineElements/spine-color-picker'},
+        {name: 'spine-contraster', url: 'https://github.com/SpineElements/spine-contraster'},
+        {name: 'spine-icon-button', url: 'https://github.com/SpineElements/spine-icon-button'},
+        {name: 'spine-button', url: 'https://github.com/SpineElements/spine-button'},
+        {name: 'spine-context-menu', url: 'https://github.com/SpineElements/spine-context-menu'},
+        {name: 'spine-social-button', url: 'https://github.com/SpineElements/spine-social-button'},
+        {name: 'spine-doc-generator', url: 'https://github.com/SpineElements/spine-doc-generator'},
+        {name: 'spine-attachment', url: 'https://github.com/SpineElements/spine-attachment'},
+        {name: 'spine-tags', url: 'https://github.com/SpineElements/spine-tags'}
+      ];
+    }
+
+    _render({expandedItem}) {
+      return html`
+        <style>
+          .collapsed-item {
+            display: flex;
+          }
+          .collapsed-item div {
+            flex: 1 1 auto;
+          }
+          .expanded-item {
+            padding: 0 0 16px;
+          }
+          .expanded-item a {
+            font-size: 15px;
+          }
+        </style>
+
+        Expanded item: <code>${expandedItem ? `{name: '${expandedItem.name}', ...}` : 'null'}</code>
+
+        <br><br>
+
+        <spine-expansion-panel-list
+            items="${this.items}"
+            on-expanded-item-changed="${e => {
+              this.expandedItem = e.detail.expandedItem
+            }}"
+
+            renderCollapsedItem="${item => html`
+              <div class="collapsed-item">
+                <div>${item.name}</div>
+                <a href="${item.url}">GitHub page</a>
+              </div>
+            `}"
+
+            renderExpandedItem="${item => html`
+              <div class="expanded-item">
+                <h2>${item.name}</h2>
+                <a href="${item.url}">GitHub page</a>
+              </div>
+            `}">
+        </spine-expansion-panel-list>
+      `;
+    }
+  }
+
+  window.customElements.define('demo-element', DemoElement);
+</script>
 
 <demo-element></demo-element>
 
