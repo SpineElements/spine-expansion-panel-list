@@ -107,7 +107,7 @@ class SpineFloatingExpansionList extends LitElement {
           ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
         }
   
-        #container ::slotted(.-spine-expansion-panel--list-item) {
+        #container ::slotted(.-spine-expansion-panel-list--item) {
           margin: 0 var(--spine-expansion-panel-list-expansion-size, 20px);
           @apply --shadow-elevation-2dp;
           background: var(--primary-background-color, #ffffff);
@@ -120,11 +120,11 @@ class SpineFloatingExpansionList extends LitElement {
           overflow: hidden;
         }
   
-        #container ::slotted(.-spine-expansion-panel--list-item:not([expanded]):not([ends-collapsed-range])) {
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):not([ends-collapsed-range])) {
           border-bottom: 1px solid var(---spine-epl-divider-color);
         }
   
-        #container ::slotted(.-spine-expansion-panel--list-item[expanded]) {
+        #container ::slotted(.-spine-expansion-panel-list--item[expanded]) {
           margin: 16px 0;
           @apply --shadow-elevation-8dp;
   
@@ -153,11 +153,11 @@ class SpineFloatingExpansionList extends LitElement {
   _renderLightDOM({items, expandedItem, renderCollapsedItem, renderExpandedItem}) {
     return html`${
         items.map(item => html`
-        <div class="-spine-expansion-panel--list-item" 
+        <div class="-spine-expansion-panel-list--item" 
              expanded?="${(item === expandedItem)}" 
              ends-collapsed-range?="${this._getItemEndsCollapsedRange(item)}" 
              on-click="${e => this._handleItemClick(item)}">
-          <div class="-spine-expansion-panel--list-item-content">
+          <div class="-spine-expansion-panel-list--item-content">
             <!--
               The "overflow: hidden" style is added below to prevent collapsing the stamper
               children's margins, e.g. if <h2> is placed as the first template's tag,
@@ -297,7 +297,7 @@ class SpineFloatingExpansionList extends LitElement {
    *                    containing all of the item elements currently displayed by this component
    */
   _getItemElements() {
-    return this.querySelectorAll('.-spine-expansion-panel--list-item');
+    return this.querySelectorAll('.-spine-expansion-panel-list--item');
   }
 
   /**
@@ -316,7 +316,7 @@ class SpineFloatingExpansionList extends LitElement {
    * @return {Element}
    */
   _getItemContentElement(itemElement) {
-    return itemElement.querySelector('.-spine-expansion-panel--list-item-content');
+    return itemElement.querySelector('.-spine-expansion-panel-list--item-content');
   }
 
   /**
