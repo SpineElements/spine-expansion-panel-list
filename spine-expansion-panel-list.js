@@ -6,6 +6,7 @@
 
 import {render} from 'lit-html/lit-html.js';
 import {LitElement, html} from '@polymer/lit-element';
+import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
 
 /**
@@ -278,18 +279,21 @@ class SpineFloatingExpansionList extends LitElement {
 
     renderUpdatedUI();
 
-    // start the height transition animation by setting height to match the updated (expanded or
-    // collapsed) content height
-    itemHeightsToAnimate.forEach(setItemHeightByContentHeight);
+    // wait a microtask delay to let a component update a UI if it is not rendered immediately
+    microTask.run(() => {
+      // start the height transition animation by setting height to match the updated (expanded or
+      // collapsed) content height
+      itemHeightsToAnimate.forEach(setItemHeightByContentHeight);
 
-    // when animation completes, reset item heights from fixed values back to 'auto' for any
-    // subsequent height changes that might occur dynamically are not ignored (e.g. if item content
-    // changes dynamically after this)
-    const transitionDuration =
-        this.constructor.__getElementTransitionDuration(itemHeightsToAnimate[0]);
-    setTimeout(() => {
-      itemHeightsToAnimate.forEach(setItemHeightAuto);
-    }, transitionDuration);
+      // when animation completes, reset item heights from fixed values back to 'auto' for any
+      // subsequent height changes that might occur dynamically are not ignored (e.g. if item content
+      // changes dynamically after this)
+      const transitionDuration =
+          this.constructor.__getElementTransitionDuration(itemHeightsToAnimate[0]);
+      setTimeout(() => {
+        itemHeightsToAnimate.forEach(setItemHeightAuto);
+      }, transitionDuration);
+    });
   }
 
   /**
