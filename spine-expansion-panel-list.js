@@ -14,19 +14,19 @@ import '@polymer/paper-styles/shadow.js';
  * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item using the
- * `renderCollapsedItem` property, which should be declared as a function that accepts an item as a
+ * `renderItem` property, which should be declared as a function that accepts an item as a
  *  parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
  *  used for rendering each of the provided items.
  *
  * A template for an expanded item can be specified using the `renderExpandedItem` property, which
- * works the same as `renderCollapsedItem`, but is invoked for rendering an expanded item.
+ * works the same as `renderItem`, but is invoked for rendering an expanded item.
  *
  * Example:
  * ```
  * <spine-expansion-panel-list
  *     items="${attachments}"
  *
- *     renderCollapsedItem="${item => html`
+ *     renderItem="${item => html`
  *       <div>Name: ${item.name}</div>
  *       <div>Size: ${item.size}</div>
  *     `}"
@@ -66,7 +66,7 @@ class SpineFloatingExpansionList extends LitElement {
        * An array of objects (or values of other type) that identify the list of items being
        * rendered by this component. Each item in this array is used as a model that will be passed
        * to an item template rendering function when a corresponding item is rendered. See the
-       * `renderCollapsedItem` and `renderExpandedItem` properties.
+       * `renderItem` and `renderExpandedItem` properties.
        *
        * A component's user is free to choose any type and form of the item objects provided in this
        * array.
@@ -82,7 +82,7 @@ class SpineFloatingExpansionList extends LitElement {
        * returns the lit-html's `TemplateResult` that corresponds to the content that should be
        * rendered for this item.
        */
-      renderCollapsedItem: Function,
+      renderItem: Function,
       /**
        * A function for rendering expanded items. It receives an item from the `items` array, and
        * returns the lit-html's `TemplateResult` that corresponds to the content that should be
@@ -145,13 +145,13 @@ class SpineFloatingExpansionList extends LitElement {
    * Similar to `_render`, but renders content that should be placed in an element's light DOM.
    *
    * The item elements, with their respective custom content templates that have been provided via
-   * `renderCollapsedItem` and `renderExpandedItem` properties, have to be rendered into element's
+   * `renderItem` and `renderExpandedItem` properties, have to be rendered into element's
    * light DOM and not shadow DOM.
    *
    * This is needed for their style to be customizable with CSS declarations present in the
    * context where the `spine-expansion-panel-list` element is used.
    */
-  _renderLightDOM({items, expandedItem, renderCollapsedItem, renderExpandedItem}) {
+  _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem}) {
     return html`${
         items.map(item => html`
         <div class="-spine-expansion-panel-list--item" 
@@ -173,7 +173,7 @@ class SpineFloatingExpansionList extends LitElement {
             -->
             <div style="overflow: hidden">${
             item !== expandedItem || !this.renderExpandedItem
-                ? renderCollapsedItem(item)
+                ? renderItem(item, item === expandedItem)
                 : renderExpandedItem(item)
             }</div>
           </div>
@@ -190,9 +190,9 @@ class SpineFloatingExpansionList extends LitElement {
     super._applyRender(result, node);
 
     // render light DOM tree
-    const {items, expandedItem, renderCollapsedItem, renderExpandedItem} = this;
+    const {items, expandedItem, renderItem, renderExpandedItem} = this;
     const lightDOMTemplateResult = this._renderLightDOM(
-        {items, expandedItem, renderCollapsedItem, renderExpandedItem}
+        {items, expandedItem, renderItem, renderExpandedItem}
     );
     render(lightDOMTemplateResult, this);
   }
