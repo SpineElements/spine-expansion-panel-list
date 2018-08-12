@@ -32,7 +32,7 @@ function getImmediateParentDeep(node) {
  */
 function findParentElementDeep(node, condition) {
   while(true) {
-    node = this.getImmediateParentDeep(node);
+    node = getImmediateParentDeep(node);
     if (!node) {
       return null;
     }
@@ -52,6 +52,9 @@ function nodeContainsDeep(parent, node) {
   return !!findParentElementDeep(node, p => p === parent);
 }
 
+/**
+ * @type {Array.<function(Element):Boolean>}
+ */
 const popupFalsePositiveIdentifiers = [];
 
 /**
