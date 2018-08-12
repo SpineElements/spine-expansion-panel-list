@@ -8,6 +8,7 @@ import {render} from 'lit-html/lit-html.js';
 import {LitElement, html} from '@polymer/lit-element';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
+import {isOuterClickEvent} from './popup-detection.js';
 
 /**
  * An element that displays an associated array of items as a list of panels showing a summary view
@@ -362,13 +363,9 @@ class SpineFloatingExpansionList extends LitElement {
   }
 
   _handleDocumentClick(event) {
-    if (event.composedPath().some(el =>
-        el !== this && el instanceof Node && this.contains(el)
-    )) {
-      // one of the items was clicked, no auto collapsing is required
-      return;
+    if (isOuterClickEvent(event, this)) {
+      this._setExpandedItem(null);
     }
-    this._setExpandedItem(null);
   }
 }
 
