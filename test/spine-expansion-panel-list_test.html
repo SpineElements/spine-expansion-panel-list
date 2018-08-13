@@ -48,7 +48,7 @@
         <div id="list-container">
           <spine-expansion-panel-list id="list"
             items="${this.items}"
-            renderCollapsedItem="${item => html`
+            renderItem="${item => html`
               <div class="collapsed-test-item">
                 <div>${item.name}</div>
                 <a href="${item.url}">GitHub page</a>

@@ -6,7 +6,7 @@
 
 import {render} from 'lit-html/lit-html.js';
 import {LitElement, html} from '@polymer/lit-element';
-import { microTask } from '@polymer/polymer/lib/utils/async.js';
+import {microTask} from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
 import {isOuterClickEvent} from './popup-detection.js';
 
