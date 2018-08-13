@@ -108,15 +108,11 @@ export function isOuterClickEvent(event, referenceElement) {
     return false;
   }
 
-  const onPopupElement = eventPath.find(el => {
-    if (! (el instanceof Element)) {
-      // can't calculate computed style on non-element nodes, e.g. window
-      return false;
-    }
-    return isPopupElement(el);
+  const popupElement = eventPath.find(eventTarget => {
+    return (eventTarget instanceof Element) && isPopupElement(eventTarget);
   });
-  if (onPopupElement) {
-    const onParentPath = nodeContainsDeep(onPopupElement, referenceElement);
+  if (popupElement) {
+    const onParentPath = nodeContainsDeep(popupElement, referenceElement);
     if (onParentPath) {
       // a popup that contains referenceElement element (outisde click)
       return true;
@@ -126,5 +122,16 @@ export function isOuterClickEvent(event, referenceElement) {
     // invoked from inside of referenceElement
     return false;
   }
+
+  const eventTarget = eventPath[0];
+  const inDocument = findParentElementDeep(eventTarget, n => n === document);
+  // noinspection RedundantIfStatementJS -- retaining a separate if branch for readability
+  if (!inDocument) {
+    // A target element seems to have just been removed from from a document
+    // this is possible in case of OK/Cancel/Close button clicks that close the subdialog before
+    // this event handler. Interpreting this as an inner click in this assumption.
+    return false;
+  }
+
   return true;
 }
