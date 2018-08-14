@@ -58,21 +58,22 @@ function nodeContainsDeep(parent, node) {
 const popupFalsePositiveIdentifiers = [];
 
 /**
- * By default all elements whose `position` CSS attribute is either `absolute` or `fixed` is are
- * considered as popup elements (such as dialogs, menus, etc.)
+ * By default all elements whose `position` CSS attribute is either `absolute` or `fixed` are
+ * considered as popup elements (such as dialogs, menus, etc.).
  *
- * In practice, at least `position: absolute` elements can be present not just for implementing
- * popups, but also for a regular application's layout. This function can be used by applications
- * to register their application-specific rules of what absolutely or fixed positioned elements
- * should actually be not considered as popups.
+ * In practice such elements can be present not just for implementing popups, but also for a regular
+ * application's layout, which is hard to formalize since it depends on applications and the
+ * components that they use. This function can be used by applications to register their
+ * application-specific rules of when absolutely or fixed positioned elements should actually not be
+ * considered as popup elements.
  *
- * @param {function(Element):Boolean} isFalsePositive Accepts an element that is considered as an
- *                                                    element that prior analysis have shown to be
- *                                                    a popup element. This function can return
+ * @param {function(Element):Boolean} isFalsePositive A function that accepts an element that is
+ *                                                    considered as a popup element according to a
+ *                                                    prior analysis. This function has to return
  *                                                    `true` to indicate that it "knows" that it is
- *                                                    not a popup element.
+ *                                                    not a popup element, and `false` otherwise.
  */
-export function addFalsePositiveIdentifier(isFalsePositive) {
+export function addFalsePopupDetectionIdentifier(isFalsePositive) {
   popupFalsePositiveIdentifiers.push(isFalsePositive);
 }
 
@@ -86,7 +87,6 @@ function isPopupElement(element) {
       isFalsePositive(element)
   );
   return !notAPopupActually;
-
 }
 
 /**
@@ -99,6 +99,11 @@ function isPopupElement(element) {
  */
 export function isOuterClickEvent(event, referenceElement) {
   const eventPath = event.composedPath();
+  const eventTarget = eventPath[0];
+  if (eventTarget === referenceElement) {
+    return false;
+  }
+
   const inSubtree = eventPath.some(eventTarget =>
       eventTarget !== referenceElement &&
       eventTarget instanceof Node &&
@@ -123,7 +128,6 @@ export function isOuterClickEvent(event, referenceElement) {
     return false;
   }
 
-  const eventTarget = eventPath[0];
   const inDocument = findParentElementDeep(eventTarget, n => n === document);
   // noinspection RedundantIfStatementJS -- retaining a separate if branch for readability
   if (!inDocument) {
