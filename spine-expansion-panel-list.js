@@ -6,26 +6,28 @@
 
 import {render} from 'lit-html/lit-html.js';
 import {LitElement, html} from '@polymer/lit-element';
+import {microTask} from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
+import {isOuterClickEvent} from './popup-detection.js';
 
 /**
  * An element that displays an associated array of items as a list of panels showing a summary view
  * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item using the
- * `renderCollapsedItem` property, which should be declared as a function that accepts an item as a
+ * `renderItem` property, which should be declared as a function that accepts an item as a
  *  parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
  *  used for rendering each of the provided items.
  *
  * A template for an expanded item can be specified using the `renderExpandedItem` property, which
- * works the same as `renderCollapsedItem`, but is invoked for rendering an expanded item.
+ * works the same as `renderItem`, but is invoked for rendering an expanded item.
  *
  * Example:
  * ```
  * <spine-expansion-panel-list
  *     items="${attachments}"
  *
- *     renderCollapsedItem="${item => html`
+ *     renderItem="${item => html`
  *       <div>Name: ${item.name}</div>
  *       <div>Size: ${item.size}</div>
  *     `}"
@@ -65,7 +67,7 @@ class SpineFloatingExpansionList extends LitElement {
        * An array of objects (or values of other type) that identify the list of items being
        * rendered by this component. Each item in this array is used as a model that will be passed
        * to an item template rendering function when a corresponding item is rendered. See the
-       * `renderCollapsedItem` and `renderExpandedItem` properties.
+       * `renderItem` and `renderExpandedItem` properties.
        *
        * A component's user is free to choose any type and form of the item objects provided in this
        * array.
@@ -81,7 +83,7 @@ class SpineFloatingExpansionList extends LitElement {
        * returns the lit-html's `TemplateResult` that corresponds to the content that should be
        * rendered for this item.
        */
-      renderCollapsedItem: Function,
+      renderItem: Function,
       /**
        * A function for rendering expanded items. It receives an item from the `items` array, and
        * returns the lit-html's `TemplateResult` that corresponds to the content that should be
@@ -108,6 +110,7 @@ class SpineFloatingExpansionList extends LitElement {
         }
   
         #container ::slotted(.-spine-expansion-panel-list--item) {
+          position: relative;
           margin: 0 var(--spine-expansion-panel-list-expansion-size, 20px);
           @apply --shadow-elevation-2dp;
           background: var(--primary-background-color, #ffffff);
@@ -132,6 +135,31 @@ class SpineFloatingExpansionList extends LitElement {
   
           @apply --spine-expansion-panel-list-expanded-item;
         }
+        
+        #container ::slotted(.-spine-expansion-panel-list--item:focus) {
+          outline: none;
+        }
+        
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::before {
+          content: '';
+          background: #53c297;
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+        }
+
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::after {
+          content: '';
+          background: #53c297;
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          right: 0;
+          opacity: 0.05;
+        }
       </style>
   
       <div id="container">
@@ -144,19 +172,21 @@ class SpineFloatingExpansionList extends LitElement {
    * Similar to `_render`, but renders content that should be placed in an element's light DOM.
    *
    * The item elements, with their respective custom content templates that have been provided via
-   * `renderCollapsedItem` and `renderExpandedItem` properties, have to be rendered into element's
+   * `renderItem` and `renderExpandedItem` properties, have to be rendered into element's
    * light DOM and not shadow DOM.
    *
    * This is needed for their style to be customizable with CSS declarations present in the
    * context where the `spine-expansion-panel-list` element is used.
    */
-  _renderLightDOM({items, expandedItem, renderCollapsedItem, renderExpandedItem}) {
+  _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem}) {
     return html`${
         items.map(item => html`
-        <div class="-spine-expansion-panel-list--item" 
+        <div class="-spine-expansion-panel-list--item"
+             tabindex="0"
              expanded?="${(item === expandedItem)}" 
              ends-collapsed-range?="${this._getItemEndsCollapsedRange(item)}" 
-             on-click="${e => this._handleItemClick(item)}">
+             on-click="${e => this._handleItemClick(item)}"
+             on-keydown="${e => this._handleItemKeydown(item, e)}">
           <div class="-spine-expansion-panel-list--item-content">
             <!--
               The "overflow: hidden" style is added below to prevent collapsing the custom
@@ -171,8 +201,8 @@ class SpineFloatingExpansionList extends LitElement {
               https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
             -->
             <div style="overflow: hidden">${
-            item !== expandedItem || !this.renderExpandedItem
-                ? renderCollapsedItem(item)
+              item !== expandedItem || !this.renderExpandedItem
+                ? renderItem(item, item === expandedItem)
                 : renderExpandedItem(item)
             }</div>
           </div>
@@ -189,9 +219,9 @@ class SpineFloatingExpansionList extends LitElement {
     super._applyRender(result, node);
 
     // render light DOM tree
-    const {items, expandedItem, renderCollapsedItem, renderExpandedItem} = this;
+    const {items, expandedItem, renderItem, renderExpandedItem} = this;
     const lightDOMTemplateResult = this._renderLightDOM(
-        {items, expandedItem, renderCollapsedItem, renderExpandedItem}
+        {items, expandedItem, renderItem, renderExpandedItem}
     );
     render(lightDOMTemplateResult, this);
   }
@@ -278,18 +308,21 @@ class SpineFloatingExpansionList extends LitElement {
 
     renderUpdatedUI();
 
-    // start the height transition animation by setting height to match the updated (expanded or
-    // collapsed) content height
-    itemHeightsToAnimate.forEach(setItemHeightByContentHeight);
+    // wait a microtask delay to let a component update a UI if it is not rendered immediately
+    microTask.run(() => {
+      // start the height transition animation by setting height to match the updated (expanded or
+      // collapsed) content height
+      itemHeightsToAnimate.forEach(setItemHeightByContentHeight);
 
-    // when animation completes, reset item heights from fixed values back to 'auto' for any
-    // subsequent height changes that might occur dynamically are not ignored (e.g. if item content
-    // changes dynamically after this)
-    const transitionDuration =
-        this.constructor.__getElementTransitionDuration(itemHeightsToAnimate[0]);
-    setTimeout(() => {
-      itemHeightsToAnimate.forEach(setItemHeightAuto);
-    }, transitionDuration);
+      // when animation completes, reset item heights from fixed values back to 'auto' for any
+      // subsequent height changes that might occur dynamically are not ignored (e.g. if item content
+      // changes dynamically after this)
+      const transitionDuration =
+          this.constructor.__getElementTransitionDuration(itemHeightsToAnimate[0]);
+      setTimeout(() => {
+        itemHeightsToAnimate.forEach(setItemHeightAuto);
+      }, transitionDuration);
+    });
   }
 
   /**
@@ -358,13 +391,25 @@ class SpineFloatingExpansionList extends LitElement {
   }
 
   _handleDocumentClick(event) {
-    if (event.composedPath().some(el =>
-        el !== this && el instanceof Node && this.contains(el)
-    )) {
-      // one of the items was clicked, no auto collapsing is required
-      return;
+    if (isOuterClickEvent(event, this)) {
+      this._setExpandedItem(null);
     }
-    this._setExpandedItem(null);
+  }
+
+  _handleItemKeydown(item, event) {
+    const itemElement = this._getItemElement(item);
+    const onSubelement = event.target !== itemElement;
+
+    switch (event.keyCode) {
+      case 13: // Enter
+        if (!onSubelement) {
+          this._setExpandedItem(item);
+        }
+        break;
+      case 27: // Esc
+        this._setExpandedItem(null);
+        break;
+    }
   }
 }
 

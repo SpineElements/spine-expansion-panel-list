@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (c) 2000-2018 TeamDev. All rights reserved.
+  ~ TeamDev PROPRIETARY and CONFIDENTIAL.
+  ~ Use is subject to license terms.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Popup detection test</title>
+
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
+  <style>
+    .bordered {
+      border: 1px solid silver;
+    }
+    #reference-element {
+      width: 300px;
+      height: 300px;
+      position: relative;
+      border: 2px solid black;
+    }
+    #ordinary-nested-content, #outer-content {
+      width: 100px;
+      height: 100px;
+    }
+    #nested-popup-absolute, #nested-popup-fixed,
+    #outer-absolute-content-not-a-popup,
+    #outer-fixed-content-not-a-popup {
+      width: 100px;
+      height: 50px;
+    }
+    #nested-popup-absolute {
+      position: absolute;
+      left: 50px;
+      top: 150px;
+    }
+    #nested-popup-fixed {
+      position: fixed;
+      left: 150px;
+      top: 250px;
+    }
+    #outer-absolute-content-not-a-popup {
+      position: absolute;
+      margin-top: 10px;
+    }
+    #outer-fixed-content-not-a-popup {
+      position: fixed;
+      left: 150px;
+      top: 450px;
+    }
+  </style>
+</head>
+<body>
+
+<test-fixture id="test-setup">
+  <template>
+    <div id="outer-container" class="bordered">
+      <div id="reference-element" class="bordered">
+        <div id="ordinary-nested-content" class="bordered"><button>ordinary-nested-content</button></div>
+        <div id="nested-popup-absolute" class="bordered"><button>nested-popup-absolute</button></div>
+        <div id="nested-popup-fixed" class="bordered"><button>nested-popup-fixed</button></div>
+        <button>reference-element</button>
+      </div>
+      <div id="outer-content" class="bordered"><button>outer-content</button></div>
+      <div id="outer-absolute-content-not-a-popup" class="bordered">
+        <button>outer-absolute-content-not-a-popup</button>
+      </div>
+      <div id="outer-fixed-content-not-a-popup" class="bordered">
+        <button>outer-fixed-content-not-a-popup</button>
+      </div>
+      <button>outer-container</button>
+    </div>
+  </template>
+</test-fixture>
+
+<script type="module">
+  import {isOuterClickEvent, addFalsePopupDetectionIdentifier} from '../popup-detection.js';
+
+  addFalsePopupDetectionIdentifier(el => {
+    return el.id === 'outer-absolute-content-not-a-popup' ||
+        el.id === 'outer-fixed-content-not-a-popup';
+  });
+
+  suite('popup-detection test', function() {
+    let outerContainer;
+    let referenceElement;
+    setup(() => {
+      outerContainer = fixture('test-setup');
+      referenceElement = document.querySelector('#reference-element');
+    });
+
+    function testOuterClick(clickedElementId, expectedAsOuterClick) {
+      test(`Clicking on ${clickedElementId}`, () => {
+        let outerClickDetected;
+        const handleClick = event => {
+          outerClickDetected = isOuterClickEvent(event, referenceElement);
+        };
+        document.addEventListener('click', handleClick);
+        try {
+          const testWithElement = (elementSelector, clicker) => {
+            const element = document.querySelector(elementSelector);
+            if (!element) {
+              throw Error(`Couldn't find element ${elementSelector}`);
+            }
+            // noinspection UnnecessaryLocalVariableJS
+            const unsetValue = {};
+            outerClickDetected = unsetValue;
+            clicker(element);
+            assert.equal(outerClickDetected, expectedAsOuterClick,
+                `Checking isOuterClickEvent for element ${elementSelector}`);
+          };
+
+          testWithElement(`#${clickedElementId}`, element => {
+            element.dispatchEvent(new MouseEvent('click', {
+              bubbles: true,
+              cancellable: true,
+              composed: true
+            }));
+          });
+
+          testWithElement(`#${clickedElementId} > button`, element => {
+            element.click();
+          });
+        } finally {
+          document.removeEventListener('click', handleClick);
+        }
+      });
+    }
+
+    testOuterClick('reference-element', false);
+    testOuterClick('ordinary-nested-content', false);
+    testOuterClick('nested-popup-absolute', false);
+    testOuterClick('nested-popup-fixed', false);
+    testOuterClick('outer-container', true);
+    testOuterClick('outer-content', true);
+    testOuterClick('outer-absolute-content-not-a-popup', true);
+    testOuterClick('outer-fixed-content-not-a-popup', true);
+  });
+</script>
+</body>
+</html>

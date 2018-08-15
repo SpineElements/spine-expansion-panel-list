@@ -4,19 +4,19 @@ An element that displays an associated array of items as a list of panels showin
 for each item, and allows expanding any item to display a full item view.
 
 You can specify the template for the content that should be displayed for each item using the
-`renderCollapsedItem` property, which should be declared as a function that accepts an item as a
+`renderItem` property, which should be declared as a function that accepts an item as a
  parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
  used for rendering each of the provided items.
 
 A template for an expanded item can be specified using the `renderExpandedItem` property, which
-works the same as `renderCollapsedItem`, but is invoked for rendering an expanded item.
+works the same as `renderItem`, but is invoked for rendering an expanded item.
 
 Example:
 ```
 <spine-expansion-panel-list
     items="${attachments}"
 
-    renderCollapsedItem="${item => html`
+    renderItem="${item => html`
       <div>Name: ${item.name}</div>
       <div>Size: ${item.size}</div>
     `}"
