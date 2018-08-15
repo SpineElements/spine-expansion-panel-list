@@ -15,12 +15,14 @@ import {isOuterClickEvent} from './popup-detection.js';
  * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item using the
- * `renderItem` property, which should be declared as a function that accepts an item as a
- *  parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
- *  used for rendering each of the provided items.
+ * `renderItem` property, which should be declared as a function that accepts two arguments: an
+ *  item, and a boolean `expanded` value, and returns a respective lit-html `TemplateResult`
+ *  instance. This function will be used for rendering each of the provided items.
  *
  * A template for an expanded item can be specified using the `renderExpandedItem` property, which
- * works the same as `renderItem`, but is invoked for rendering an expanded item.
+ * works the same as `renderItem`, but is invoked for rendering an expanded item. If this attribute
+ * is specified, the function specified with `renderItem` will be used only for rendering collapsed
+ * items.
  *
  * Example:
  * ```
@@ -58,6 +60,11 @@ import {isOuterClickEvent} from './popup-detection.js';
  * `--spine-expansion-panel-list-item`           | Mixin applied to all list item containers      | `{}`
  * `--spine-expansion-panel-list-expanded-item`  | Mixin applied to expanded list item containers | `{}`
  * `--spine-expansion-panel-list-expansion-size` | Size by which an expanded item's left/right edges stand out relative to the side edges of collapsed items | `20px`
+ * `--spine-expansion-panel-list-focus-color`    | A color for displaying a focus bar and a semi-transparent overlay for a focused item | `#53c297`
+ * `--spine-expansion-panel-list-item-focus-bar` | Mixin for a focus bar for a focused item (displayed on the left item's side by default) | `{}`
+ * `--spine-expansion-panel-list-item-focus-overlay` | Mixin for an semi-transparent overlay that is displayed over a focused item | `{}`
+ * `--shadow-elevation-2dp`                      | Mixin that specifies a shadow used for collapsed items by default | (see @polymer/paper-styles/shadow.js)
+ * `--shadow-elevation-8dp`                      | Mixin that specifies a shadow used for expanded items by default  | (see @polymer/paper-styles/shadow.js)\
  *
  */
 class SpineFloatingExpansionList extends LitElement {
@@ -107,6 +114,7 @@ class SpineFloatingExpansionList extends LitElement {
           display: block;
   
           ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
+          ---spine-epl-focus-color: var(--spine-expansion-panel-list-focus-color, #53c297);
         }
   
         #container ::slotted(.-spine-expansion-panel-list--item) {
@@ -142,23 +150,27 @@ class SpineFloatingExpansionList extends LitElement {
         
         #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::before {
           content: '';
-          background: #53c297;
+          background: var(---spine-epl-focus-color);
           position: absolute;
           left: 0;
           top: 0;
           bottom: 0;
           width: 3px;
+          
+          @apply --spine-expansion-panel-list-item-focus-bar;
         }
 
         #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::after {
           content: '';
-          background: #53c297;
+          background: var(---spine-epl-focus-color);
           position: absolute;
           left: 0;
           top: 0;
           bottom: 0;
           right: 0;
           opacity: 0.05;
+          
+          @apply --spine-expansion-panel-list-item-focus-overlay;
         }
       </style>
   
@@ -315,8 +327,8 @@ class SpineFloatingExpansionList extends LitElement {
       itemHeightsToAnimate.forEach(setItemHeightByContentHeight);
 
       // when animation completes, reset item heights from fixed values back to 'auto' for any
-      // subsequent height changes that might occur dynamically are not ignored (e.g. if item content
-      // changes dynamically after this)
+      // subsequent height changes that might occur dynamically are not ignored (e.g. if item
+      // content changes dynamically after this)
       const transitionDuration =
           this.constructor.__getElementTransitionDuration(itemHeightsToAnimate[0]);
       setTimeout(() => {

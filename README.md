@@ -4,12 +4,14 @@ An element that displays an associated array of items as a list of panels showin
 for each item, and allows expanding any item to display a full item view.
 
 You can specify the template for the content that should be displayed for each item using the
-`renderItem` property, which should be declared as a function that accepts an item as a
- parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
- used for rendering each of the provided items.
+`renderItem` property, which should be declared as a function that accepts two arguments: an
+ item, and a boolean `expanded` value, and returns a respective lit-html `TemplateResult`
+ instance. This function will be used for rendering each of the provided items.
 
 A template for an expanded item can be specified using the `renderExpandedItem` property, which
-works the same as `renderItem`, but is invoked for rendering an expanded item.
+works the same as `renderItem`, but is invoked for rendering an expanded item. If this attribute
+is specified, the function specified with `renderItem` will be used only for rendering collapsed
+items.
 
 Example:
 ```
@@ -47,6 +49,11 @@ Custom property/mixin                         | Description                     
 `--spine-expansion-panel-list-item`           | Mixin applied to all list item containers      | `{}`
 `--spine-expansion-panel-list-expanded-item`  | Mixin applied to expanded list item containers | `{}`
 `--spine-expansion-panel-list-expansion-size` | Size by which an expanded item's left/right edges stand out relative to the side edges of collapsed items | `20px`
+`--spine-expansion-panel-list-focus-color`    | A color for displaying a focus bar and a semi-transparent overlay for a focused item | `#53c297`
+`--spine-expansion-panel-list-item-focus-bar` | Mixin for a focus bar for a focused item (displayed on the left item's side by default) | `{}`
+`--spine-expansion-panel-list-item-focus-overlay` | Mixin for an semi-transparent overlay that is displayed over a focused item | `{}`
+`--shadow-elevation-2dp`                      | Mixin that specifies a shadow used for collapsed items by default | (see @polymer/paper-styles/shadow.js)
+`--shadow-elevation-8dp`                      | Mixin that specifies a shadow used for expanded items by default  | (see @polymer/paper-styles/shadow.js)
 
 # License
 
