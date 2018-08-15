@@ -110,6 +110,7 @@ class SpineFloatingExpansionList extends LitElement {
         }
   
         #container ::slotted(.-spine-expansion-panel-list--item) {
+          position: relative;
           margin: 0 var(--spine-expansion-panel-list-expansion-size, 20px);
           @apply --shadow-elevation-2dp;
           background: var(--primary-background-color, #ffffff);
@@ -134,6 +135,31 @@ class SpineFloatingExpansionList extends LitElement {
   
           @apply --spine-expansion-panel-list-expanded-item;
         }
+        
+        #container ::slotted(.-spine-expansion-panel-list--item:focus) {
+          outline: none;
+        }
+        
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::before {
+          content: '';
+          background: #53c297;
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+        }
+
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::after {
+          content: '';
+          background: #53c297;
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          right: 0;
+          opacity: 0.05;
+        }
       </style>
   
       <div id="container">
@@ -155,10 +181,12 @@ class SpineFloatingExpansionList extends LitElement {
   _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem}) {
     return html`${
         items.map(item => html`
-        <div class="-spine-expansion-panel-list--item" 
+        <div class="-spine-expansion-panel-list--item"
+             tabindex="0"
              expanded?="${(item === expandedItem)}" 
              ends-collapsed-range?="${this._getItemEndsCollapsedRange(item)}" 
-             on-click="${e => this._handleItemClick(item)}">
+             on-click="${e => this._handleItemClick(item)}"
+             on-keydown="${e => this._handleItemKeydown(item, e)}">
           <div class="-spine-expansion-panel-list--item-content">
             <!--
               The "overflow: hidden" style is added below to prevent collapsing the custom
@@ -173,7 +201,7 @@ class SpineFloatingExpansionList extends LitElement {
               https://developers.google.com/web/fundamentals/web-components/shadowdom#stylinglightdom
             -->
             <div style="overflow: hidden">${
-            item !== expandedItem || !this.renderExpandedItem
+              item !== expandedItem || !this.renderExpandedItem
                 ? renderItem(item, item === expandedItem)
                 : renderExpandedItem(item)
             }</div>
@@ -365,6 +393,22 @@ class SpineFloatingExpansionList extends LitElement {
   _handleDocumentClick(event) {
     if (isOuterClickEvent(event, this)) {
       this._setExpandedItem(null);
+    }
+  }
+
+  _handleItemKeydown(item, event) {
+    const itemElement = this._getItemElement(item);
+    const onSubelement = event.target !== itemElement;
+
+    switch (event.keyCode) {
+      case 13: // Enter
+        if (!onSubelement) {
+          this._setExpandedItem(item);
+        }
+        break;
+      case 27: // Esc
+        this._setExpandedItem(null);
+        break;
     }
   }
 }
