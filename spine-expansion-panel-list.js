@@ -197,7 +197,7 @@ class SpineFloatingExpansionList extends LitElement {
              tabindex="0"
              expanded?="${(item === expandedItem)}" 
              ends-collapsed-range?="${this._getItemEndsCollapsedRange(item)}" 
-             on-click="${e => this._handleItemClick(item)}"
+             on-click="${e => this._handleItemClick(item, e)}"
              on-keydown="${e => this._handleItemKeydown(item, e)}">
           <div class="-spine-expansion-panel-list--item-content">
             <!--
@@ -398,8 +398,12 @@ class SpineFloatingExpansionList extends LitElement {
     }));
   }
 
-  _handleItemClick(item) {
-    this._setExpandedItem(item);
+  _handleItemClick(item, event) {
+    if (item !== this.expandedItem) {
+      this._setExpandedItem(item);
+    } else {
+      this._setExpandedItem(null);
+    }
   }
 
   _handleDocumentClick(event) {
