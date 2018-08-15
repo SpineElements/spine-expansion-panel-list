@@ -10,6 +10,15 @@ import {microTask} from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
 import {isOuterClickEvent} from './popup-detection.js';
 
+
+/**
+ * A CSS class name that can be applied to a child element of expanded item layout in order to make
+ * it collapse the item when it is clicked.
+ *
+ * @type {string}
+ */
+export const expansionToggleClassName = 'expansion-toggle';
+
 /**
  * An element that displays an associated array of items as a list of panels showing a summary view
  * for each item, and allows expanding any item to display a full item view.
@@ -398,17 +407,23 @@ class SpineFloatingExpansionList extends LitElement {
     }));
   }
 
-  _handleItemClick(item, event) {
-    if (item !== this.expandedItem) {
-      this._setExpandedItem(item);
-    } else {
+  _handleDocumentClick(event) {
+    if (isOuterClickEvent(event, this)) {
       this._setExpandedItem(null);
     }
   }
 
-  _handleDocumentClick(event) {
-    if (isOuterClickEvent(event, this)) {
-      this._setExpandedItem(null);
+  _handleItemClick(item, event) {
+    if (item !== this.expandedItem) {
+      this._setExpandedItem(item);
+    } else {
+      const composedPath = event.composedPath();
+      const itemElement = this._getItemElement(item);
+      const clickedElement = composedPath.find(el => itemElement.contains(el));
+      const clickInExpansionToggle = clickedElement.closest(`.${expansionToggleClassName}`);
+      if (clickInExpansionToggle) {
+        this._setExpandedItem(null);
+      }
     }
   }
 

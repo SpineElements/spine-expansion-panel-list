@@ -55,6 +55,10 @@
           .expanded-item a {
             font-size: 15px;
           }
+          h2 {
+            cursor: pointer;
+            border-bottom: 1px solid silver;
+          }
         </style>
 
         Expanded item: <code>${expandedItem ? `{name: '${expandedItem.name}', ...}` : 'null'}</code>
@@ -76,7 +80,7 @@
 
             renderExpandedItem="${item => html`
               <div class="expanded-item">
-                <h2>${item.name}</h2>
+                <h2 class="expansion-toggle">${item.name}</h2>
                 <a href="${item.url}">GitHub page</a>
               </div>
             `}">
