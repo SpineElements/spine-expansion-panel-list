@@ -64,7 +64,7 @@ import {isOuterClickEvent} from './popup-detection.js';
  * `--spine-expansion-panel-list-item-focus-bar` | Mixin for a focus bar for a focused item (displayed on the left item's side by default) | `{}`
  * `--spine-expansion-panel-list-item-focus-overlay` | Mixin for an semi-transparent overlay that is displayed over a focused item | `{}`
  * `--shadow-elevation-2dp`                      | Mixin that specifies a shadow used for collapsed items by default | (see @polymer/paper-styles/shadow.js)
- * `--shadow-elevation-8dp`                      | Mixin that specifies a shadow used for expanded items by default  | (see @polymer/paper-styles/shadow.js)\
+ * `--shadow-elevation-8dp`                      | Mixin that specifies a shadow used for expanded items by default  | (see @polymer/paper-styles/shadow.js)
  *
  */
 class SpineFloatingExpansionList extends LitElement {
