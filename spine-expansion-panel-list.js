@@ -44,13 +44,22 @@ export const expansionToggleClassName = 'expansion-toggle';
  *     `}"
  *
  *     renderExpandedItem="${item => html`
- *       <div>Name: ${item.name}</div>
+ *       <div class="expansion-toggle">Name: ${item.name}</div>
  *       <img src="${item.imageUrl}">
  *     `}">
  * </spine-expansion-panel-list>
  * ```
  *
- * This element dispatches the non-bubbling `expanded-item-changed` event when the expanded item is
+ * ### Item Expansion and Collapsing
+ *
+ * A user can expand and collapse items either using a mouse or a keyboard (by pressing Tab to focus
+ * a respective item, Enter to expand it, and Esc to collapse it).
+ *
+ * It is also possible to make certian portion(s) of an expanded item's layout as active areas that
+ * can be clicked to collapse an item. To do this, add the `expansion-toggle` class to the
+ * respective element in an expanded layout.
+ *
+ * This element dispatches a non-bubbling `expanded-item-changed` event when an expanded item is
  * changed. You can read the `event.detail.expandedItem` property from the dispatched `event` to
  * detect which item has been expanded (will be `null` if no items are expanded).
  *
@@ -95,15 +104,26 @@ class SpineFloatingExpansionList extends LitElement {
        */
       expandedItem: Object,
       /**
-       * A function for rendering collapsed items. It receives an item from the `items` array, and
-       * returns the lit-html's `TemplateResult` that corresponds to the content that should be
-       * rendered for this item.
+       * A function for rendering collapsed items. It receives two parameters:
+       *  - {*}       item     — an item's value from the `items` array;
+       *  - {Boolean} expanded — set to `true` if the item is expanded, and `false` if collapsed.
+       *
+       * This function should returns the lit-html's `TemplateResult` that corresponds to the
+       * content that should be rendered for this item.
+       *
+       * This function is invoked for both expanded and collapsed items if the `renderExpandedItem`
+       * property is not set, and only for collapsed items if `renderExpandedItem` is set.
        */
       renderItem: Function,
       /**
-       * A function for rendering expanded items. It receives an item from the `items` array, and
-       * returns the lit-html's `TemplateResult` that corresponds to the content that should be
-       * rendered for this item.
+       * An optional function for rendering expanded items. If not specified, the one specified in
+       * `renderItem` will be used for rendering both expanded and collapsed items.
+       *
+       * It receives one argument:
+       *  - {*} item — an item's value from the `items` array.
+       *
+       * Returns the lit-html's `TemplateResult` that corresponds to the content that should be
+       * rendered for this item in its expanded state.
        */
       renderExpandedItem: Function
     }
@@ -200,6 +220,9 @@ class SpineFloatingExpansionList extends LitElement {
    * context where the `spine-expansion-panel-list` element is used.
    */
   _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem}) {
+    if (!renderItem) {
+      throw new Error('The `renderItem` property of spine-expansion-panel-list must be specified');
+    }
     return html`${
         items.map(item => html`
         <div class="-spine-expansion-panel-list--item"

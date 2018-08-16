@@ -24,13 +24,22 @@ Example:
     `}"
 
     renderExpandedItem="${item => html`
-      <div>Name: ${item.name}</div>
+      <div class="expansion-toggle">Name: ${item.name}</div>
       <img src="${item.imageUrl}">
     `}">
 </spine-expansion-panel-list>
 ```
 
-This element dispatches the non-bubbling `expanded-item-changed` event when the expanded item is
+### Item Expansion and Collapsing
+
+A user can expand and collapse items either using a mouse or a keyboard (by pressing Tab to focus
+a respective item, Enter to expand it, and Esc to collapse it).
+
+It is also possible to make certian portion(s) of an expanded item's layout as active areas that
+can be clicked to collapse an item. To do this, add the `expansion-toggle` class to the
+respective element in an expanded layout.
+
+This element dispatches a non-bubbling `expanded-item-changed` event when an expanded item is
 changed. You can read the `event.detail.expandedItem` property from the dispatched `event` to
 detect which item has been expanded (will be `null` if no items are expanded).
 
