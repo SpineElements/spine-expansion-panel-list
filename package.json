@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@polymer/iron-demo-helpers": "^3.0.0-pre.18",
+    "@polymer/paper-card": "^3.0.0-pre.21",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "spine-test-helpers": "github:SpineElements/spine-test-helpers#semver:^0.6.0",
     "wct-browser-legacy": "^1.0.1"

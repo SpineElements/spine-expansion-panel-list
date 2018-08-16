@@ -8,7 +8,7 @@ import {render} from 'lit-html/lit-html.js';
 import {LitElement, html} from '@polymer/lit-element';
 import {microTask} from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
-import {isOuterClickEvent} from './popup-detection.js';
+import {isOuterClickEvent, findParentElementDeep} from './dom-helpers.js';
 
 
 /**
@@ -17,7 +17,7 @@ import {isOuterClickEvent} from './popup-detection.js';
  *
  * @type {string}
  */
-export const expansionToggleClassName = 'expansion-toggle';
+export const expansionToggleClassName = 'spine-epl-expansion-toggle';
 
 /**
  * An element that displays an associated array of items as a list of panels showing a summary view
@@ -44,7 +44,7 @@ export const expansionToggleClassName = 'expansion-toggle';
  *     `}"
  *
  *     renderExpandedItem="${item => html`
- *       <div class="expansion-toggle">Name: ${item.name}</div>
+ *       <div class="spine-epl-expansion-toggle">Name: ${item.name}</div>
  *       <img src="${item.imageUrl}">
  *     `}">
  * </spine-expansion-panel-list>
@@ -56,7 +56,7 @@ export const expansionToggleClassName = 'expansion-toggle';
  * a respective item, Enter to expand it, and Esc to collapse it).
  *
  * It is also possible to make certian portion(s) of an expanded item's layout as active areas that
- * can be clicked to collapse an item. To do this, add the `expansion-toggle` class to the
+ * can be clicked to collapse an item. To do this, add the `spine-epl-expansion-toggle` class to the
  * respective element in an expanded layout.
  *
  * This element dispatches a non-bubbling `expanded-item-changed` event when an expanded item is
@@ -443,9 +443,16 @@ class SpineFloatingExpansionList extends LitElement {
     } else {
       const composedPath = event.composedPath();
       const itemElement = this._getItemElement(item);
-      const clickedElement = composedPath.find(el => itemElement.contains(el));
-      const clickInExpansionToggle = clickedElement.closest(`.${expansionToggleClassName}`);
-      if (clickInExpansionToggle) {
+      const eventTarget = composedPath[0];
+      const isExpansionToggle = node =>
+          node.classList && node.classList.contains(expansionToggleClassName);
+      const clickedExpansionToggle = isExpansionToggle(eventTarget)
+          ? eventTarget
+          : findParentElementDeep(
+              eventTarget,
+              isExpansionToggle,
+              itemElement);
+      if (clickedExpansionToggle) {
         this._setExpandedItem(null);
       }
     }

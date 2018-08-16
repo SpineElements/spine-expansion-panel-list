@@ -24,7 +24,7 @@ Example:
     `}"
 
     renderExpandedItem="${item => html`
-      <div class="expansion-toggle">Name: ${item.name}</div>
+      <div class="spine-epl-expansion-toggle">Name: ${item.name}</div>
       <img src="${item.imageUrl}">
     `}">
 </spine-expansion-panel-list>
@@ -36,7 +36,7 @@ A user can expand and collapse items either using a mouse or a keyboard (by pres
 a respective item, Enter to expand it, and Esc to collapse it).
 
 It is also possible to make certian portion(s) of an expanded item's layout as active areas that
-can be clicked to collapse an item. To do this, add the `expansion-toggle` class to the
+can be clicked to collapse an item. To do this, add the `spine-epl-expansion-toggle` class to the
 respective element in an expanded layout.
 
 This element dispatches a non-bubbling `expanded-item-changed` event when an expanded item is

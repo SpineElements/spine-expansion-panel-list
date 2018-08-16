@@ -36,6 +36,7 @@
 
 <script type="module">
   import {LitElement, html} from '@polymer/lit-element';
+  import '@polymer/paper-card/paper-card.js';
   import {expansionToggleClassName} from '../spine-expansion-panel-list.js';
 
   class TestElementContainer extends LitElement {
@@ -48,25 +49,28 @@
         <div id="list-container">
           <spine-expansion-panel-list id="list"
             items="${this.items}"
+
             renderItem="${item => html`
               <div class="collapsed-test-item">
                 <div>${item.name}</div>
                 <a href="${item.url}">GitHub page</a>
               </div>
             `}"
+
             renderExpandedItem="${item => html`
               <div class="expanded-test-item">
                 <h2 class$="${expansionToggleClassName}">
-                  <div class="header-child-element">
+                  <paper-card class="header-child-element">
                     <p class="header-inner-element">
                       ${item.name}
                     </p>
-                  </div>
+                  </paper-card>
                 </h2>
                 <a href="${item.url}">GitHub page</a>
                 <span class="not-an-expansion-toggle">regular content</span>
               </div>
             `}"
+
           </spine-expansion-panel-list>
         </div>
       `;

@@ -28,18 +28,21 @@ function getImmediateParentDeep(node) {
  *
  * @param {Node} node
  * @param {function(Node):Boolean} condition
+ * @param {Node=} upToNode  An optional node reference where to stop the search (including this
+ *                          node). If specified, nodes upper in the hierarchy won't be searched for.
  * @returns {Node}
  */
-function findParentElementDeep(node, condition) {
-  while(true) {
-    node = getImmediateParentDeep(node);
-    if (!node) {
-      return null;
-    }
-    if (condition(node)) {
-      return node;
+export function findParentElementDeep(node, condition, upToNode) {
+  for(let currentParent = getImmediateParentDeep(node);
+      currentParent;
+      currentParent = currentParent !== upToNode
+          ? getImmediateParentDeep(currentParent)
+          : null) {
+    if (condition(currentParent)) {
+      return currentParent;
     }
   }
+  return null;
 }
 
 /**
