@@ -78,7 +78,7 @@ export const expansionToggleClassName = 'expansion-toggle';
  * `--spine-expansion-panel-list-item`           | Mixin applied to all list item containers      | `{}`
  * `--spine-expansion-panel-list-expanded-item`  | Mixin applied to expanded list item containers | `{}`
  * `--spine-expansion-panel-list-expansion-size` | Size by which an expanded item's left/right edges stand out relative to the side edges of collapsed items | `20px`
- * `--spine-expansion-panel-list-focus-color`    | A color for displaying a focus bar and a semi-transparent overlay for a focused item | `#53c297`
+ * `--spine-expansion-panel-list-focus-color`    | A color for displaying a focus bar and a semi-transparent overlay for a focused item | `var(--accent-color, #ff4081)`
  * `--spine-expansion-panel-list-item-focus-bar` | Mixin for a focus bar for a focused item (displayed on the left item's side by default) | `{}`
  * `--spine-expansion-panel-list-item-focus-overlay` | Mixin for an semi-transparent overlay that is displayed over a focused item | `{}`
  * `--shadow-elevation-2dp`                      | Mixin that specifies a shadow used for collapsed items by default | (see @polymer/paper-styles/shadow.js)
@@ -143,7 +143,7 @@ class SpineFloatingExpansionList extends LitElement {
           display: block;
   
           ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
-          ---spine-epl-focus-color: var(--spine-expansion-panel-list-focus-color, #53c297);
+          ---spine-epl-focus-color: var(--spine-expansion-panel-list-focus-color, var(--accent-color, #ff4081));
         }
   
         #container ::slotted(.-spine-expansion-panel-list--item) {
@@ -193,6 +193,7 @@ class SpineFloatingExpansionList extends LitElement {
           content: '';
           background: var(---spine-epl-focus-color);
           position: absolute;
+          pointer-events: none;
           left: 0;
           top: 0;
           bottom: 0;
