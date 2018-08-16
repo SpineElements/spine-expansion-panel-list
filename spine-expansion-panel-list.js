@@ -443,15 +443,27 @@ class SpineFloatingExpansionList extends LitElement {
     } else {
       const composedPath = event.composedPath();
       const itemElement = this._getItemElement(item);
-      const eventTarget = composedPath[0];
       const isExpansionToggle = node =>
           node.classList && node.classList.contains(expansionToggleClassName);
-      const clickedExpansionToggle = isExpansionToggle(eventTarget)
-          ? eventTarget
-          : findParentElementDeep(
-              eventTarget,
-              isExpansionToggle,
-              itemElement);
+
+      let clickedExpansionToggle;
+      // The expansionToggleClassName class can be either in parent shadow or parent light
+      // hierarchy, so checking just parentNode hierarchy of child element that is assigned to
+      // a slot of its parent element will skip checking the respective portion of shadow DOM.
+      //
+      // Hence, checking entries in composedPath helps, since they contain the whole chain including
+      // light and shadow DOM nodes.
+      for (const eventTarget of composedPath) {
+        clickedExpansionToggle = isExpansionToggle(eventTarget)
+            ? eventTarget
+            : findParentElementDeep(
+                eventTarget,
+                isExpansionToggle,
+                itemElement);
+        if (clickedExpansionToggle) {
+          break;
+        }
+      }
       if (clickedExpansionToggle) {
         this._setExpandedItem(null);
       }
