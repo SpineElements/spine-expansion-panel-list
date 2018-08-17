@@ -8,19 +8,30 @@ import {render} from 'lit-html/lit-html.js';
 import {LitElement, html} from '@polymer/lit-element';
 import {microTask} from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
-import {isOuterClickEvent} from './popup-detection.js';
+import {isOuterClickEvent, findParentElementDeep} from './dom-helpers.js';
+
+
+/**
+ * A CSS class name that can be applied to a child element of expanded item layout in order to make
+ * it collapse the item when it is clicked.
+ *
+ * @type {string}
+ */
+export const expansionToggleClassName = 'spine-epl-expansion-toggle';
 
 /**
  * An element that displays an associated array of items as a list of panels showing a summary view
  * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item using the
- * `renderItem` property, which should be declared as a function that accepts an item as a
- *  parameter, and returns a respective lit-html `TemplateResult` instance. This function will be
- *  used for rendering each of the provided items.
+ * `renderItem` property, which should be declared as a function that accepts two arguments: an
+ *  item, and a boolean `expanded` value, and returns a respective lit-html `TemplateResult`
+ *  instance. This function will be used for rendering each of the provided items.
  *
  * A template for an expanded item can be specified using the `renderExpandedItem` property, which
- * works the same as `renderItem`, but is invoked for rendering an expanded item.
+ * works the same as `renderItem`, but is invoked for rendering an expanded item. If this attribute
+ * is specified, the function specified with `renderItem` will be used only for rendering collapsed
+ * items.
  *
  * Example:
  * ```
@@ -33,13 +44,22 @@ import {isOuterClickEvent} from './popup-detection.js';
  *     `}"
  *
  *     renderExpandedItem="${item => html`
- *       <div>Name: ${item.name}</div>
+ *       <div class="spine-epl-expansion-toggle">Name: ${item.name}</div>
  *       <img src="${item.imageUrl}">
  *     `}">
  * </spine-expansion-panel-list>
  * ```
  *
- * This element dispatches the non-bubbling `expanded-item-changed` event when the expanded item is
+ * ### Item Expansion and Collapsing
+ *
+ * A user can expand and collapse items either using a mouse or a keyboard (by pressing Tab to focus
+ * a respective item, Enter to expand it, and Esc to collapse it).
+ *
+ * It is also possible to make certian portion(s) of an expanded item's layout as active areas that
+ * can be clicked to collapse an item. To do this, add the `spine-epl-expansion-toggle` class to the
+ * respective element in an expanded layout.
+ *
+ * This element dispatches a non-bubbling `expanded-item-changed` event when an expanded item is
  * changed. You can read the `event.detail.expandedItem` property from the dispatched `event` to
  * detect which item has been expanded (will be `null` if no items are expanded).
  *
@@ -58,6 +78,11 @@ import {isOuterClickEvent} from './popup-detection.js';
  * `--spine-expansion-panel-list-item`           | Mixin applied to all list item containers      | `{}`
  * `--spine-expansion-panel-list-expanded-item`  | Mixin applied to expanded list item containers | `{}`
  * `--spine-expansion-panel-list-expansion-size` | Size by which an expanded item's left/right edges stand out relative to the side edges of collapsed items | `20px`
+ * `--spine-expansion-panel-list-focus-color`    | A color for displaying a focus bar and a semi-transparent overlay for a focused item | `var(--accent-color, #ff4081)`
+ * `--spine-expansion-panel-list-item-focus-bar` | Mixin for a focus bar for a focused item (displayed on the left item's side by default) | `{}`
+ * `--spine-expansion-panel-list-item-focus-overlay` | Mixin for an semi-transparent overlay that is displayed over a focused item | `{}`
+ * `--shadow-elevation-2dp`                      | Mixin that specifies a shadow displayed for collapsed items by default | (see @polymer/paper-styles/shadow.js)
+ * `--shadow-elevation-8dp`                      | Mixin that specifies a shadow displayed for expanded items by default  | (see @polymer/paper-styles/shadow.js)
  *
  */
 class SpineFloatingExpansionList extends LitElement {
@@ -79,15 +104,26 @@ class SpineFloatingExpansionList extends LitElement {
        */
       expandedItem: Object,
       /**
-       * A function for rendering collapsed items. It receives an item from the `items` array, and
-       * returns the lit-html's `TemplateResult` that corresponds to the content that should be
-       * rendered for this item.
+       * A function for rendering collapsed items. It receives two parameters:
+       *  - {*}       item     — an item's value from the `items` array;
+       *  - {Boolean} expanded — set to `true` if the item is expanded, and `false` if collapsed.
+       *
+       * This function should returns the lit-html's `TemplateResult` that corresponds to the
+       * content that should be rendered for this item.
+       *
+       * This function is invoked for both expanded and collapsed items if the `renderExpandedItem`
+       * property is not set, and only for collapsed items if `renderExpandedItem` is set.
        */
       renderItem: Function,
       /**
-       * A function for rendering expanded items. It receives an item from the `items` array, and
-       * returns the lit-html's `TemplateResult` that corresponds to the content that should be
-       * rendered for this item.
+       * An optional function for rendering expanded items. If not specified, the one specified in
+       * `renderItem` will be used for rendering both expanded and collapsed items.
+       *
+       * It receives one argument:
+       *  - {*} item — an item's value from the `items` array.
+       *
+       * Returns the lit-html's `TemplateResult` that corresponds to the content that should be
+       * rendered for this item in its expanded state.
        */
       renderExpandedItem: Function
     }
@@ -107,6 +143,7 @@ class SpineFloatingExpansionList extends LitElement {
           display: block;
   
           ---spine-epl-divider-color: rgba(0, 0, 0, var(--dark-divider-opacity, 0.12));
+          ---spine-epl-focus-color: var(--spine-expansion-panel-list-focus-color, var(--accent-color, #ff4081));
         }
   
         #container ::slotted(.-spine-expansion-panel-list--item) {
@@ -142,23 +179,28 @@ class SpineFloatingExpansionList extends LitElement {
         
         #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::before {
           content: '';
-          background: #53c297;
+          background: var(---spine-epl-focus-color);
           position: absolute;
           left: 0;
           top: 0;
           bottom: 0;
           width: 3px;
+          
+          @apply --spine-expansion-panel-list-item-focus-bar;
         }
 
         #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::after {
           content: '';
-          background: #53c297;
+          background: var(---spine-epl-focus-color);
           position: absolute;
+          pointer-events: none;
           left: 0;
           top: 0;
           bottom: 0;
           right: 0;
-          opacity: 0.05;
+          opacity: 0.03;
+          
+          @apply --spine-expansion-panel-list-item-focus-overlay;
         }
       </style>
   
@@ -179,13 +221,16 @@ class SpineFloatingExpansionList extends LitElement {
    * context where the `spine-expansion-panel-list` element is used.
    */
   _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem}) {
+    if (!renderItem) {
+      throw new Error('The `renderItem` property of spine-expansion-panel-list must be specified');
+    }
     return html`${
         items.map(item => html`
         <div class="-spine-expansion-panel-list--item"
              tabindex="0"
              expanded?="${(item === expandedItem)}" 
              ends-collapsed-range?="${this._getItemEndsCollapsedRange(item)}" 
-             on-click="${e => this._handleItemClick(item)}"
+             on-click="${e => this._handleItemClick(item, e)}"
              on-keydown="${e => this._handleItemKeydown(item, e)}">
           <div class="-spine-expansion-panel-list--item-content">
             <!--
@@ -315,8 +360,8 @@ class SpineFloatingExpansionList extends LitElement {
       itemHeightsToAnimate.forEach(setItemHeightByContentHeight);
 
       // when animation completes, reset item heights from fixed values back to 'auto' for any
-      // subsequent height changes that might occur dynamically are not ignored (e.g. if item content
-      // changes dynamically after this)
+      // subsequent height changes that might occur dynamically are not ignored (e.g. if item
+      // content changes dynamically after this)
       const transitionDuration =
           this.constructor.__getElementTransitionDuration(itemHeightsToAnimate[0]);
       setTimeout(() => {
@@ -386,13 +431,42 @@ class SpineFloatingExpansionList extends LitElement {
     }));
   }
 
-  _handleItemClick(item) {
-    this._setExpandedItem(item);
-  }
-
   _handleDocumentClick(event) {
     if (isOuterClickEvent(event, this)) {
       this._setExpandedItem(null);
+    }
+  }
+
+  _handleItemClick(item, event) {
+    if (item !== this.expandedItem) {
+      this._setExpandedItem(item);
+    } else {
+      const composedPath = event.composedPath();
+      const itemElement = this._getItemElement(item);
+      const isExpansionToggle = node =>
+          node.classList && node.classList.contains(expansionToggleClassName);
+
+      let clickedExpansionToggle;
+      // The expansionToggleClassName class can be either in parent shadow or parent light
+      // hierarchy, so checking just parentNode hierarchy of child element that is assigned to
+      // a slot of its parent element will skip checking the respective portion of shadow DOM.
+      //
+      // Hence, checking entries in composedPath helps, since they contain the whole chain including
+      // light and shadow DOM nodes.
+      for (const eventTarget of composedPath) {
+        clickedExpansionToggle = isExpansionToggle(eventTarget)
+            ? eventTarget
+            : findParentElementDeep(
+                eventTarget,
+                isExpansionToggle,
+                itemElement);
+        if (clickedExpansionToggle) {
+          break;
+        }
+      }
+      if (clickedExpansionToggle) {
+        this._setExpandedItem(null);
+      }
     }
   }
 

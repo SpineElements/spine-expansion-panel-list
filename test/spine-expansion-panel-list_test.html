@@ -36,7 +36,8 @@
 
 <script type="module">
   import {LitElement, html} from '@polymer/lit-element';
-  import '../spine-expansion-panel-list.js';
+  import '@polymer/paper-card/paper-card.js';
+  import {expansionToggleClassName} from '../spine-expansion-panel-list.js';
 
   class TestElementContainer extends LitElement {
     constructor() {
@@ -48,18 +49,28 @@
         <div id="list-container">
           <spine-expansion-panel-list id="list"
             items="${this.items}"
+
             renderItem="${item => html`
               <div class="collapsed-test-item">
                 <div>${item.name}</div>
                 <a href="${item.url}">GitHub page</a>
               </div>
             `}"
+
             renderExpandedItem="${item => html`
               <div class="expanded-test-item">
-                <h2>${item.name}</h2>
+                <h2 class$="${expansionToggleClassName}">
+                  <paper-card class="header-child-element">
+                    <p class="header-inner-element">
+                      ${item.name}
+                    </p>
+                  </paper-card>
+                </h2>
                 <a href="${item.url}">GitHub page</a>
+                <span class="not-an-expansion-toggle">regular content</span>
               </div>
             `}"
+
           </spine-expansion-panel-list>
         </div>
       `;
@@ -79,6 +90,8 @@
     asyncDelay, runAsyncChain, checkNodes, Checkers
   } from '../node_modules/spine-test-helpers/spine-test-helpers.js';
 
+  import {expansionToggleClassName} from '../spine-expansion-panel-list.js';
+
   suite('<spine-expansion-panel-list>', function() {
     let listContainer;
     let list;
@@ -87,6 +100,7 @@
       item: '-spine-expansion-panel-list-item',
       collapsedItemContent: 'collapsed-test-item',
       expandedItemContent: 'expanded-test-item',
+      notAnExpansionToggle: `not-an-expansion-toggle`
     };
 
     // size in pixels by which an expanded item's left/right edges stand out relative to the side
@@ -124,6 +138,11 @@
             name: 'a',
             properties: {href: itemModel.url},
             innerHTML: 'GitHub page'
+          }),
+          Checkers.element({
+            name: 'span',
+            hasClassName: classNames.notAnExpansionToggle,
+            innerHTML: 'regular content'
           })
         ]
       }),
@@ -155,6 +174,37 @@
             itemElement.getBoundingClientRect().bottom +
             (expanded ? defaultExpandedItemVertMargin : 0);
       });
+    }
+
+    function getItemElements() {
+      return list.querySelectorAll(
+          `.${classNames.collapsedItemContent}, .${classNames.expandedItemContent}`);
+    }
+
+    function checkItemContents(expandedItem, message) {
+      const itemElements = getItemElements();
+      checkNodes(itemElements, null, testItems.map(item =>
+          item === expandedItem
+              ? Checkers.expandedItemContents(item)
+              : Checkers.collapsedItemContents(item)
+      ), message);
+    }
+
+    function clickElement(itemIndex, subElementSelector) {
+      const itemElements = getItemElements();
+      const element = itemElements[itemIndex];
+      const elementToClick = subElementSelector
+          ? element.querySelector(subElementSelector)
+          : element;
+      if (!elementToClick) {
+        throw Error(`Couldn't find element at index ${itemIndex} and ` +
+            `subelementSelector=${subElementSelector}`);
+      }
+      elementToClick.dispatchEvent(new MouseEvent('click', {
+        bubbles: true,
+        cancellable: true,
+        composed: true
+      }));
     }
 
     setup(() => {
@@ -191,16 +241,6 @@
     });
 
     test('rendered item contents are correct', async () => {
-      const checkItemContents = (expandedItem, message) => {
-        const itemElements = list.querySelectorAll(
-            `.${classNames.collapsedItemContent}, .${classNames.expandedItemContent}`);
-        checkNodes(itemElements, null, testItems.map(item =>
-            item === expandedItem
-                ? Checkers.expandedItemContents(item)
-                : Checkers.collapsedItemContents(item)
-        ), message);
-      };
-
       // first, check the default expansion state
       checkItemContents(null, 'Checking rendered item contents with all items collapsed');
 
@@ -242,6 +282,33 @@
       });
       asyncCalls.push(() => done());
       runAsyncChain({retryTimeout: 2000}, ...asyncCalls);
+    });
+
+    test('item expansion with clicks', async () => {
+      checkItemContents(null, 'All items should be collapsed by default');
+      let itemIndex = 0;
+      for (const item of testItems) {
+        clickElement(itemIndex, null);
+        await asyncDelay();
+        checkItemContents(item, 'Checking item expanded by click');
+
+        clickElement(itemIndex, null);
+        await asyncDelay();
+        checkItemContents(item,
+            `Item shouldn't be collapsed by clicking on the parent of .${expansionToggleClassName} element`);
+
+        clickElement(itemIndex, `.${classNames.notAnExpansionToggle}`);
+        await asyncDelay();
+        checkItemContents(item,
+            `Item shouldn't be collapsed by clicking on a sibling of .${expansionToggleClassName} element`);
+
+        clickElement(itemIndex, `.${expansionToggleClassName} .header-inner-element`);
+        await asyncDelay();
+        checkItemContents(null,
+            `Item should be collapsed after clicking inside of .${expansionToggleClassName} element`);
+
+        itemIndex++;
+      }
     });
 
   });

@@ -7,7 +7,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Popup detection test</title>
+  <title>dom-helpers test</title>
 
   <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
   <script src="../node_modules/wct-browser-legacy/browser.js"></script>
@@ -76,16 +76,17 @@
 </test-fixture>
 
 <script type="module">
-  import {isOuterClickEvent, addFalsePopupDetectionIdentifier} from '../popup-detection.js';
+  import {isOuterClickEvent, addFalsePopupDetectionIdentifier} from '../dom-helpers.js';
 
   addFalsePopupDetectionIdentifier(el => {
     return el.id === 'outer-absolute-content-not-a-popup' ||
         el.id === 'outer-fixed-content-not-a-popup';
   });
 
-  suite('popup-detection test', function() {
+  suite('dom-helpers test', function() {
     let outerContainer;
     let referenceElement;
+
     setup(() => {
       outerContainer = fixture('test-setup');
       referenceElement = document.querySelector('#reference-element');

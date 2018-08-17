@@ -11,7 +11,7 @@
 
 <script type="module">
   import {LitElement, html} from '@polymer/lit-element';
-  import '../spine-expansion-panel-list.js';
+  import {expansionToggleClassName} from '../spine-expansion-panel-list.js';
 
   class DemoElement extends LitElement {
     static get properties() {
@@ -55,6 +55,10 @@
           .expanded-item a {
             font-size: 15px;
           }
+          h2 {
+            cursor: pointer;
+            border-bottom: 1px solid silver;
+          }
         </style>
 
         Expanded item: <code>${expandedItem ? `{name: '${expandedItem.name}', ...}` : 'null'}</code>
@@ -76,7 +80,7 @@
 
             renderExpandedItem="${item => html`
               <div class="expanded-item">
-                <h2>${item.name}</h2>
+                <h2 class$="${expansionToggleClassName}">${item.name}</h2>
                 <a href="${item.url}">GitHub page</a>
               </div>
             `}">
