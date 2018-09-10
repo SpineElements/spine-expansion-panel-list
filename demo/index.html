@@ -54,10 +54,17 @@
           }
           .expanded-item a {
             font-size: 15px;
+            flex: 1 1 auto;
           }
           h2 {
             cursor: pointer;
             border-bottom: 1px solid silver;
+          }
+          .collapsed-item .item-menu {
+            display: inline-block;
+            width: 100px;
+            flex: none;
+            text-align: right;
           }
         </style>
 
@@ -71,14 +78,17 @@
               this.expandedItem = e.detail.expandedItem
             }}"
 
-            renderItem="${item => html`
+            renderItem="${(item, expanded, focused) => html`
               <div class="collapsed-item">
                 <div>${item.name}</div>
                 <a href="${item.url}">GitHub page</a>
+                <div class="item-menu">${focused ? html`
+                  [item menu]
+                ` : ''}</div>
               </div>
             `}"
 
-            renderExpandedItem="${item => html`
+            renderExpandedItem="${(item, focused) => html`
               <div class="expanded-item">
                 <h2 class$="${expansionToggleClassName}">${item.name}</h2>
                 <a href="${item.url}">GitHub page</a>

@@ -33,7 +33,7 @@ function getImmediateParentDeep(node) {
  * @returns {Node}
  */
 export function findParentElementDeep(node, condition, upToNode) {
-  for(let currentParent = getImmediateParentDeep(node);
+  for(let currentParent = node;
       currentParent;
       currentParent = currentParent !== upToNode
           ? getImmediateParentDeep(currentParent)
@@ -52,7 +52,7 @@ export function findParentElementDeep(node, condition, upToNode) {
  *                    nested under this element on any level
  */
 function nodeContainsDeep(parent, node) {
-  return !!findParentElementDeep(node, p => p === parent);
+  return parent !== node && !!findParentElementDeep(node, p => p === parent);
 }
 
 /**
