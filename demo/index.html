@@ -49,6 +49,12 @@
           .collapsed-item div {
             flex: 1 1 auto;
           }
+          .collapsed-item .item-focus-indicator {
+            display: inline-block;
+            width: 100px;
+            flex: none;
+            text-align: right;
+          }
           .expanded-item {
             padding: 0 0 16px;
           }
@@ -59,12 +65,6 @@
           h2 {
             cursor: pointer;
             border-bottom: 1px solid silver;
-          }
-          .collapsed-item .item-menu {
-            display: inline-block;
-            width: 100px;
-            flex: none;
-            text-align: right;
           }
         </style>
 
@@ -82,8 +82,8 @@
               <div class="collapsed-item">
                 <div>${item.name}</div>
                 <a href="${item.url}">GitHub page</a>
-                <div class="item-menu">${focused ? html`
-                  [item menu]
+                <div class="item-focus-indicator">${focused ? html`
+                  [focused]
                 ` : ''}</div>
               </div>
             `}"

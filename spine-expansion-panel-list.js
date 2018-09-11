@@ -26,14 +26,14 @@ const listItemClassName = '-spine-expansion-panel-list--item';
  * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item using the
- * `renderItem` property, which should be declared as a function that accepts two arguments: an
- *  item, and a boolean `expanded` value, and returns a respective lit-html `TemplateResult`
- *  instance. This function will be used for rendering each of the provided items.
+ * `renderItem` property, which should be declared as a function that accepts an item, and its state
+ * parameters such as `expanded` and `focused` values, and returns a respective lit-html
+ * `TemplateResult` instance. This function will be used for rendering each of the provided items.
  *
- * A template for an expanded item can be specified using the `renderExpandedItem` property, which
- * works the same as `renderItem`, but is invoked for rendering an expanded item. If this attribute
- * is specified, the function specified with `renderItem` will be used only for rendering collapsed
- * items.
+ * A template for an expanded item can alternatively be specified separately using the
+ * `renderExpandedItem` property, which works similarly to `renderItem`, but is invoked for
+ * rendering an expanded item. If this attribute is specified, the function specified with
+ * `renderItem` will be used only for rendering collapsed items.
  *
  * Example:
  * ```
@@ -57,7 +57,7 @@ const listItemClassName = '-spine-expansion-panel-list--item';
  * A user can expand and collapse items either using a mouse or a keyboard (by pressing Tab to focus
  * a respective item, Enter to expand it, and Esc to collapse it).
  *
- * It is also possible to make certian portion(s) of an expanded item's layout as active areas that
+ * It is also possible to make certain portion(s) of an expanded item's layout as active areas that
  * can be clicked to collapse an item. To do this, add the `spine-epl-expansion-toggle` class to the
  * respective element in an expanded layout.
  *
@@ -107,8 +107,10 @@ class SpineFloatingExpansionList extends LitElement {
       expandedItem: Object,
       /**
        * A function for rendering collapsed items. It receives two parameters:
-       *  - {*}       item     — an item's value from the `items` array;
+       *  - {*}       item     — an item's value from the `items` array.
        *  - {Boolean} expanded — set to `true` if the item is expanded, and `false` if collapsed.
+       *  - {Boolean} focused  — set to `true` if the item is focused (including when any of its
+       *                         subelements are focused).
        *
        * This function should returns the lit-html's `TemplateResult` that corresponds to the
        * content that should be rendered for this item.
@@ -123,11 +125,17 @@ class SpineFloatingExpansionList extends LitElement {
        *
        * It receives one argument:
        *  - {*} item — an item's value from the `items` array.
+       *  - {Boolean} focused  — set to `true` if the item is focused (including when any of its
+       *                         subelements are focused).
        *
        * Returns the lit-html's `TemplateResult` that corresponds to the content that should be
        * rendered for this item in its expanded state.
        */
       renderExpandedItem: Function,
+      /**
+       * Contains item value of a currently focused item. Item is considered focused here when
+       * either its main element is focused, or any of its subelements are focused.
+       */
       _focusedItem: Element
     }
   }
