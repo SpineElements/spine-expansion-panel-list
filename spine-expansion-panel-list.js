@@ -168,6 +168,8 @@ class SpineFloatingExpansionList extends LitElement {
           padding: 8px 16px;
           cursor: pointer;
           transition: all 0.2s;
+          /* avoid displaying default focus outline */
+          outline: none;
   
           @apply --spine-expansion-panel-list-item;
           overflow: hidden;
@@ -186,11 +188,7 @@ class SpineFloatingExpansionList extends LitElement {
           @apply --spine-expansion-panel-list-expanded-item;
         }
         
-        #container ::slotted(.-spine-expansion-panel-list--item:focus) {
-          outline: none;
-        }
-        
-        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::before {
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]).-sepl-focused-item)::before {
           content: '';
           background: var(---spine-epl-focus-color);
           position: absolute;
@@ -202,7 +200,7 @@ class SpineFloatingExpansionList extends LitElement {
           @apply --spine-expansion-panel-list-item-focus-bar;
         }
 
-        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::after {
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]).-sepl-focused-item)::after {
           content: '';
           background: var(---spine-epl-focus-color);
           position: absolute;
@@ -239,7 +237,7 @@ class SpineFloatingExpansionList extends LitElement {
     }
     return html`${
         items.map(item => html`
-        <div class="-spine-expansion-panel-list--item"
+        <div class$="-spine-expansion-panel-list--item ${item === _focusedItem ? '-sepl-focused-item' : ''}"
              tabindex="0"
              expanded?="${(item === expandedItem)}"
              seplItem="${item}" 
@@ -466,7 +464,6 @@ class SpineFloatingExpansionList extends LitElement {
   }
 
   _handleAnyFocus(event) {
-    console.log('_handleAnyFocus');
     this._focusedItem = this._getItemByEvent(event);
   }
 
