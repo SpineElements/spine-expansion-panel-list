@@ -465,12 +465,22 @@ class SpineFloatingExpansionList extends LitElement {
 
   _handleAnyFocus(event) {
     this._focusedItem = this._getItemByEvent(event);
+    if (this._focusedItemResetTimeoutId != null) {
+      clearTimeout(this._focusedItemResetTimeoutId);
+      this._focusedItemResetTimeoutId = null;
+    }
   }
 
   _handleAnyBlur(event) {
     const itemByEvent = this._getItemByEvent(event);
     if (this._focusedItem === itemByEvent) {
-      this._focusedItem = null;
+      this._focusedItemResetTimeoutId = setTimeout(() => {
+        // reset the focused item (and rerender the view accordingly) after an asynchronous delay
+        // in order to avoid the intermediate removal of the focused state when the user traverses
+        // over the elements inside of the same record
+        this._focusedItemResetTimeoutId = null;
+        this._focusedItem = null;
+      });
     }
   }
 
