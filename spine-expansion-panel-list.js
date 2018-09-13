@@ -19,19 +19,21 @@ import {isOuterClickEvent, findParentElementDeep} from './dom-helpers.js';
  */
 export const expansionToggleClassName = 'spine-epl-expansion-toggle';
 
+const listItemClassName = '-spine-expansion-panel-list--item';
+
 /**
  * An element that displays an associated array of items as a list of panels showing a summary view
  * for each item, and allows expanding any item to display a full item view.
  *
  * You can specify the template for the content that should be displayed for each item using the
- * `renderItem` property, which should be declared as a function that accepts two arguments: an
- *  item, and a boolean `expanded` value, and returns a respective lit-html `TemplateResult`
- *  instance. This function will be used for rendering each of the provided items.
+ * `renderItem` property, which should be declared as a function that accepts an item, and its state
+ * parameters such as `expanded` and `focused` values, and returns a respective lit-html
+ * `TemplateResult` instance. This function will be used for rendering each of the provided items.
  *
- * A template for an expanded item can be specified using the `renderExpandedItem` property, which
- * works the same as `renderItem`, but is invoked for rendering an expanded item. If this attribute
- * is specified, the function specified with `renderItem` will be used only for rendering collapsed
- * items.
+ * A template for an expanded item can alternatively be specified separately using the
+ * `renderExpandedItem` property, which works similarly to `renderItem`, but is invoked for
+ * rendering an expanded item. If this attribute is specified, the function specified with
+ * `renderItem` will be used only for rendering collapsed items.
  *
  * Example:
  * ```
@@ -55,7 +57,7 @@ export const expansionToggleClassName = 'spine-epl-expansion-toggle';
  * A user can expand and collapse items either using a mouse or a keyboard (by pressing Tab to focus
  * a respective item, Enter to expand it, and Esc to collapse it).
  *
- * It is also possible to make certian portion(s) of an expanded item's layout as active areas that
+ * It is also possible to make certain portion(s) of an expanded item's layout as active areas that
  * can be clicked to collapse an item. To do this, add the `spine-epl-expansion-toggle` class to the
  * respective element in an expanded layout.
  *
@@ -105,8 +107,10 @@ class SpineFloatingExpansionList extends LitElement {
       expandedItem: Object,
       /**
        * A function for rendering collapsed items. It receives two parameters:
-       *  - {*}       item     — an item's value from the `items` array;
+       *  - {*}       item     — an item's value from the `items` array.
        *  - {Boolean} expanded — set to `true` if the item is expanded, and `false` if collapsed.
+       *  - {Boolean} focused  — set to `true` if the item is focused (including when any of its
+       *                         subelements are focused).
        *
        * This function should returns the lit-html's `TemplateResult` that corresponds to the
        * content that should be rendered for this item.
@@ -121,11 +125,18 @@ class SpineFloatingExpansionList extends LitElement {
        *
        * It receives one argument:
        *  - {*} item — an item's value from the `items` array.
+       *  - {Boolean} focused  — set to `true` if the item is focused (including when any of its
+       *                         subelements are focused).
        *
        * Returns the lit-html's `TemplateResult` that corresponds to the content that should be
        * rendered for this item in its expanded state.
        */
-      renderExpandedItem: Function
+      renderExpandedItem: Function,
+      /**
+       * Contains item value of a currently focused item. Item is considered focused here when
+       * either its main element is focused, or any of its subelements are focused.
+       */
+      _focusedItem: Element
     }
   }
 
@@ -133,7 +144,9 @@ class SpineFloatingExpansionList extends LitElement {
     super();
     this.expandedItem = null;
     this.items = [];
-    this._handleDocumentClick = this._handleDocumentClick.bind(this);
+    this._handleAnyClick = this._handleAnyClick.bind(this);
+    this._handleAnyFocus = this._handleAnyFocus.bind(this);
+    this._handleAnyBlur = this._handleAnyBlur.bind(this);
   }
 
   _render(props) {
@@ -155,6 +168,8 @@ class SpineFloatingExpansionList extends LitElement {
           padding: 8px 16px;
           cursor: pointer;
           transition: all 0.2s;
+          /* avoid displaying default focus outline */
+          outline: none;
   
           @apply --spine-expansion-panel-list-item;
           overflow: hidden;
@@ -173,11 +188,7 @@ class SpineFloatingExpansionList extends LitElement {
           @apply --spine-expansion-panel-list-expanded-item;
         }
         
-        #container ::slotted(.-spine-expansion-panel-list--item:focus) {
-          outline: none;
-        }
-        
-        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::before {
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]).-sepl-focused-item)::before {
           content: '';
           background: var(---spine-epl-focus-color);
           position: absolute;
@@ -189,7 +200,7 @@ class SpineFloatingExpansionList extends LitElement {
           @apply --spine-expansion-panel-list-item-focus-bar;
         }
 
-        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]):focus)::after {
+        #container ::slotted(.-spine-expansion-panel-list--item:not([expanded]).-sepl-focused-item)::after {
           content: '';
           background: var(---spine-epl-focus-color);
           position: absolute;
@@ -220,15 +231,16 @@ class SpineFloatingExpansionList extends LitElement {
    * This is needed for their style to be customizable with CSS declarations present in the
    * context where the `spine-expansion-panel-list` element is used.
    */
-  _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem}) {
+  _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem, _focusedItem}) {
     if (!renderItem) {
       throw new Error('The `renderItem` property of spine-expansion-panel-list must be specified');
     }
     return html`${
         items.map(item => html`
-        <div class="-spine-expansion-panel-list--item"
+        <div class$="-spine-expansion-panel-list--item ${item === _focusedItem ? '-sepl-focused-item' : ''}"
              tabindex="0"
-             expanded?="${(item === expandedItem)}" 
+             expanded?="${(item === expandedItem)}"
+             seplItem="${item}" 
              ends-collapsed-range?="${this._getItemEndsCollapsedRange(item)}" 
              on-click="${e => this._handleItemClick(item, e)}"
              on-keydown="${e => this._handleItemKeydown(item, e)}">
@@ -247,8 +259,8 @@ class SpineFloatingExpansionList extends LitElement {
             -->
             <div style="overflow: hidden">${
               item !== expandedItem || !this.renderExpandedItem
-                ? renderItem(item, item === expandedItem)
-                : renderExpandedItem(item)
+                ? renderItem(item, item === expandedItem, item === _focusedItem)
+                : renderExpandedItem(item, item === _focusedItem)
             }</div>
           </div>
         </div>
@@ -264,21 +276,25 @@ class SpineFloatingExpansionList extends LitElement {
     super._applyRender(result, node);
 
     // render light DOM tree
-    const {items, expandedItem, renderItem, renderExpandedItem} = this;
+    const {items, expandedItem, renderItem, renderExpandedItem, _focusedItem} = this;
     const lightDOMTemplateResult = this._renderLightDOM(
-        {items, expandedItem, renderItem, renderExpandedItem}
+        {items, expandedItem, renderItem, renderExpandedItem, _focusedItem}
     );
     render(lightDOMTemplateResult, this);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    document.addEventListener('click', this._handleDocumentClick);
+    document.addEventListener('click', this._handleAnyClick);
+    this.addEventListener('focusin', this._handleAnyFocus);
+    this.addEventListener('focusout', this._handleAnyBlur);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    document.removeEventListener('click', this._handleDocumentClick);
+    document.removeEventListener('click', this._handleAnyClick);
+    this.removeEventListener('focus', this._handleAnyFocus);
+    this.removeEventListener('blur', this._handleAnyBlur);
   }
 
   _propertiesChanged(props, changedProps, oldProps) {
@@ -375,7 +391,7 @@ class SpineFloatingExpansionList extends LitElement {
    *                    containing all of the item elements currently displayed by this component
    */
   _getItemElements() {
-    return this.querySelectorAll('.-spine-expansion-panel-list--item');
+    return this.querySelectorAll(`.${listItemClassName}`);
   }
 
   /**
@@ -431,9 +447,40 @@ class SpineFloatingExpansionList extends LitElement {
     }));
   }
 
-  _handleDocumentClick(event) {
+  _handleAnyClick(event) {
     if (isOuterClickEvent(event, this)) {
       this._setExpandedItem(null);
+    }
+  }
+
+  _getItemByEvent(event) {
+    const eventPath = event.composedPath();
+    const eventTarget = eventPath[0];
+    const itemByEvent = findParentElementDeep(eventTarget,
+        el =>
+            this.contains(el) && el.classList.contains(listItemClassName),
+        this);
+    return itemByEvent ? itemByEvent.seplItem : null;
+  }
+
+  _handleAnyFocus(event) {
+    this._focusedItem = this._getItemByEvent(event);
+    if (this._focusedItemResetTimeoutId != null) {
+      clearTimeout(this._focusedItemResetTimeoutId);
+      this._focusedItemResetTimeoutId = null;
+    }
+  }
+
+  _handleAnyBlur(event) {
+    const itemByEvent = this._getItemByEvent(event);
+    if (this._focusedItem === itemByEvent) {
+      this._focusedItemResetTimeoutId = setTimeout(() => {
+        // reset the focused item (and rerender the view accordingly) after an asynchronous delay
+        // in order to avoid the intermediate removal of the focused state when the user traverses
+        // over the elements inside of the same record
+        this._focusedItemResetTimeoutId = null;
+        this._focusedItem = null;
+      });
     }
   }
 
@@ -454,12 +501,10 @@ class SpineFloatingExpansionList extends LitElement {
       // Hence, checking entries in composedPath helps, since they contain the whole chain including
       // light and shadow DOM nodes.
       for (const eventTarget of composedPath) {
-        clickedExpansionToggle = isExpansionToggle(eventTarget)
-            ? eventTarget
-            : findParentElementDeep(
-                eventTarget,
-                isExpansionToggle,
-                itemElement);
+        clickedExpansionToggle = findParentElementDeep(
+            eventTarget,
+            isExpansionToggle,
+            itemElement);
         if (clickedExpansionToggle) {
           break;
         }
