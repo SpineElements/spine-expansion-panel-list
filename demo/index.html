@@ -43,16 +43,34 @@
     _render({expandedItem}) {
       return html`
         <style>
+          spine-expansion-panel-list {
+            --spine-expansion-panel-list-expanded-item: {
+              padding: 0;
+            }
+          }
+          h2 {
+            margin: 0;
+            padding: 16px;
+          }
           .collapsed-item {
             display: flex;
           }
           .collapsed-item div {
             flex: 1 1 auto;
           }
+          .collapsed-item .item-focus-indicator {
+            display: inline-block;
+            width: 100px;
+            flex: none;
+            text-align: right;
+          }
           .expanded-item {
-            padding: 0 0 16px;
+            padding: 0;
           }
           .expanded-item a {
+            flex: 1 1 auto;
+            display: inline-block;
+            margin: 16px;
             font-size: 15px;
           }
           h2 {
@@ -71,14 +89,17 @@
               this.expandedItem = e.detail.expandedItem
             }}"
 
-            renderItem="${item => html`
+            renderItem="${(item, expanded, focused) => html`
               <div class="collapsed-item">
                 <div>${item.name}</div>
                 <a href="${item.url}">GitHub page</a>
+                <div class="item-focus-indicator">${focused ? html`
+                  [focused]
+                ` : ''}</div>
               </div>
             `}"
 
-            renderExpandedItem="${item => html`
+            renderExpandedItem="${(item, focused) => html`
               <div class="expanded-item">
                 <h2 class$="${expansionToggleClassName}">${item.name}</h2>
                 <a href="${item.url}">GitHub page</a>
