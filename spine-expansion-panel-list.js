@@ -9,6 +9,7 @@ import {LitElement, html} from '@polymer/lit-element';
 import {microTask} from '@polymer/polymer/lib/utils/async.js';
 import '@polymer/paper-styles/shadow.js';
 import {isOuterClickEvent, findParentElementDeep} from './dom-helpers.js';
+import lightAndShadowDomRenderingMixin from './spine-light-and-shadow-dom-rendering-mixin.js';
 
 
 /**
@@ -87,7 +88,7 @@ const listItemClassName = '-spine-expansion-panel-list--item';
  * `--shadow-elevation-8dp`                      | Mixin that specifies a shadow displayed for expanded items by default  | (see @polymer/paper-styles/shadow.js)
  *
  */
-class SpineFloatingExpansionList extends LitElement {
+class SpineFloatingExpansionList extends lightAndShadowDomRenderingMixin(LitElement) {
   static get properties() {
     return {
       /**
@@ -222,16 +223,17 @@ class SpineFloatingExpansionList extends LitElement {
   }
 
   /**
-   * Similar to `_render`, but renders content that should be placed in an element's light DOM.
-   *
    * The item elements, with their respective custom content templates that have been provided via
    * `renderItem` and `renderExpandedItem` properties, have to be rendered into element's
    * light DOM and not shadow DOM.
    *
    * This is needed for their style to be customizable with CSS declarations present in the
    * context where the `spine-expansion-panel-list` element is used.
+   *
+   * @override
    */
-  _renderLightDOM({items, expandedItem, renderItem, renderExpandedItem, _focusedItem}) {
+  _renderLightDOM() {
+    const {items, expandedItem, renderItem, renderExpandedItem, _focusedItem} = this;
     if (!renderItem) {
       throw new Error('The `renderItem` property of spine-expansion-panel-list must be specified');
     }
@@ -266,21 +268,6 @@ class SpineFloatingExpansionList extends LitElement {
         </div>
       `)
     }`;
-  }
-
-  /**
-   * @override
-   */
-  _applyRender(result, node) {
-    // render shadow DOM tree
-    super._applyRender(result, node);
-
-    // render light DOM tree
-    const {items, expandedItem, renderItem, renderExpandedItem, _focusedItem} = this;
-    const lightDOMTemplateResult = this._renderLightDOM(
-        {items, expandedItem, renderItem, renderExpandedItem, _focusedItem}
-    );
-    render(lightDOMTemplateResult, this);
   }
 
   connectedCallback() {
