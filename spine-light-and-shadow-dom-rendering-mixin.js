@@ -13,7 +13,7 @@ import {dedupingMixin} from '@polymer/polymer/lib/utils/mixin.js';
  * It adds a `_renderLightDOM`, which is similar to `_render` method, but renders content to
  * element's light DOM.
  *
- *  @mixinFunction
+ * @mixinFunction
  * @param {*} superClass a class to be mixed up with `lightAndShadowDomRenderingMixin`, expected to
  *                       extend the LitElement class directly or indirectly
  * @returns {*} a class definition that extends the provided `superClass` and has the
@@ -39,7 +39,7 @@ const lightAndShadowDomRenderingMixin =
 
         // render light DOM tree
         const lightDOMTemplateResult = this._renderLightDOM();
-        render( lightDOMTemplateResult, this);
+        render(lightDOMTemplateResult, this);
       }
     });
 export default lightAndShadowDomRenderingMixin;
