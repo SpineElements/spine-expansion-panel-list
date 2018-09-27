@@ -17,29 +17,29 @@ import {dedupingMixin} from '@polymer/polymer/lib/utils/mixin.js';
  * @param {*} superClass a class to be mixed up with `lightAndShadowDomRenderingMixin`, expected to
  *                       extend the LitElement class directly or indirectly
  * @returns {*} a class definition that extends the provided `superClass` and has the
- *                     `lightAndShadowDomRenderingMixin` functionality, that should be extended by a
- *                     class that needs to apply this mixin */
-const lightAndShadowDomRenderingMixin =
-    dedupingMixin(superClass => class extends superClass {
-      /**
-       * Similar to `_render`, but renders content that should be placed in an element's light DOM.
-       *
-       * @protected
-       */
-      _renderLightDOM() {
-        return html``;
-      }
+ *              `lightAndShadowDomRenderingMixin` functionality, that should be extended by a class
+ *              that needs to apply this mixin */
+const lightAndShadowDomRenderingMixin = dedupingMixin(superClass => class extends superClass {
+  /**
+   * Similar to `_render`, but renders content that should be placed in an element's light DOM.
+   *
+   * @protected
+   */
+  _renderLightDOM() {
+    return html``;
+  }
 
-      /**
-       * @override
-       */
-      _applyRender(result, node) {
-        // render shadow DOM tree
-        super._applyRender(result, node);
+  /**
+   * @override
+   */
+  _applyRender(result, node) {
+    // render shadow DOM tree
+    super._applyRender(result, node);
 
-        // render light DOM tree
-        const lightDOMTemplateResult = this._renderLightDOM();
-        render(lightDOMTemplateResult, this);
-      }
-    });
+    // render light DOM tree
+    const lightDOMTemplateResult = this._renderLightDOM();
+    render(lightDOMTemplateResult, this);
+  }
+});
+
 export default lightAndShadowDomRenderingMixin;
