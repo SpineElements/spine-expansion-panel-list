@@ -51,6 +51,9 @@ const lightAndShadowDomRenderingMixin = dedupingMixin(superClass => class extend
       }
       render(lightDOMTemplateResult, this);
       this.__lightAndShadowDomRenderingMixin_originalContentRewritten = true;
+    } else {
+      // preserve the light DOM that might have been originally placed into this component's subtree
+      // until `this._renderLightDOM()` returns a non-null/non-undefined template
     }
   }
 });
