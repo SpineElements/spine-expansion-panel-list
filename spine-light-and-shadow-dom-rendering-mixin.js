@@ -32,7 +32,7 @@ const lightAndShadowDomRenderingMixin =
        * @protected
        */
       _renderLightDOM() {
-        return html``;
+        return null;
       }
 
       /**
