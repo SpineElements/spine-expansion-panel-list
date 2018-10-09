@@ -13,7 +13,7 @@ import {dedupingMixin} from '@polymer/polymer/lib/utils/mixin.js';
  * It adds a `_renderLightDOM`, which is similar to `_render` method, but renders content to
  * element's light DOM.
  *
- *  @mixinFunction
+ * @mixinFunction
  * @param {*} superClass a class to be mixed up with `lightAndShadowDomRenderingMixin`, expected to
  *                       extend the LitElement class directly or indirectly
  * @returns {*} a class definition that extends the provided `superClass` and has the
@@ -23,6 +23,11 @@ const lightAndShadowDomRenderingMixin =
     dedupingMixin(superClass => class extends superClass {
       /**
        * Similar to `_render`, but renders content that should be placed in an element's light DOM.
+       *
+       * Returning `null` or `undefined` retains the original light DOM content. Original DOM
+       * content can be preserved in this way only until it is overwritten by `_renderLightDOM`
+       * returning a non-null/non-undefined content at least once after element creation, after
+       * which returning `null` or `undefined` makes an empty content to be rendered instead.
        *
        * @protected
        */
@@ -38,8 +43,15 @@ const lightAndShadowDomRenderingMixin =
         super._applyRender(result, node);
 
         // render light DOM tree
-        const lightDOMTemplateResult = this._renderLightDOM();
-        render( lightDOMTemplateResult, this);
+        let lightDOMTemplateResult = this._renderLightDOM();
+        if (lightDOMTemplateResult != null ||
+            this.__lightAndShadowDomRenderingMixin_originalContentRewritten) {
+          if (lightDOMTemplateResult == null) {
+            lightDOMTemplateResult = html``;
+          }
+          render(lightDOMTemplateResult, this);
+          this.__lightAndShadowDomRenderingMixin_originalContentRewritten = true;
+        }
       }
     });
 export default lightAndShadowDomRenderingMixin;
