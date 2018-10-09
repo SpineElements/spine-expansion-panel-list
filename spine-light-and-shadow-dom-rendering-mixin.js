@@ -54,4 +54,5 @@ const lightAndShadowDomRenderingMixin = dedupingMixin(superClass => class extend
     }
   }
 });
+
 export default lightAndShadowDomRenderingMixin;
